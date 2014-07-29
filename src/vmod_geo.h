@@ -25,7 +25,11 @@ get_value(MMDB_lookup_result_s *, const char **);
 const char *
 geo_lookup(const char *ipstr, const char **lookup_path);
 
+void
+dump_failed_lookup(const char *ipstr, const char *file_to_write_to);
+
+
 char *
-geo_lookup_weather(const char *ipstr);
+geo_lookup_weather(const char *ipstr, int use_default);
 
 #endif

@@ -7,10 +7,14 @@ tests.c: .FORCE
 .FORCE:
 
 
-bin_PROGRAMS = testrunner
+bin_PROGRAMS = testrunner test_ips
 testrunner_LDFLAGS = -lmaxminddb
+test_ips_LDFLAGS = -lmaxminddb
 testrunner_SOURCES = \
 	tests.c \
 	unity.c \
 	../src/geo_functions.c \
 	test_Runner.c
+test_ips_SOURCES = \
+	../src/geo_functions.c \
+	test_ips.c

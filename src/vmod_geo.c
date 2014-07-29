@@ -45,7 +45,7 @@ vmod_lookup_weathercode(struct sess *sp, const char *ipstr)
     char *data = NULL;
     char *cp   = NULL;
 
-    data = geo_lookup_weather(ipstr);
+    data = geo_lookup_weather(ipstr, 1);
     
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
@@ -54,7 +54,6 @@ vmod_lookup_weathercode(struct sess *sp, const char *ipstr)
 
     return cp;
 }
-
 
 const char*
 vmod_city(struct sess *sp, const char *ipstr)

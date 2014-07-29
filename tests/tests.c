@@ -23,7 +23,7 @@ void test_BadIP(void)
 {
 
     char * ip = "127.0.0.1";
-    char * value = geo_lookup_weather(ip);
+    char * value = geo_lookup_weather(ip,1);
     char * expected = "New YorkNYUS";
     TEST_ASSERT_EQUAL_STRING(expected,value);
 }
@@ -32,7 +32,7 @@ void test_CaliforniaIP(void)
 {
 
     char * ip = "199.254.0.98";
-    char * value = geo_lookup_weather(ip);
+    char * value = geo_lookup_weather(ip,1);
     char * expected = "Beverly HillsCAUS";
     TEST_ASSERT_EQUAL_STRING(expected,value);
 }
@@ -40,7 +40,7 @@ void test_CaliforniaIP(void)
 void test_ParisFranceIP(void)
 {
     char * ip = "88.190.229.170";
-    char * value = geo_lookup_weather(ip);
+    char * value = geo_lookup_weather(ip,1);
     char * expected = "Paris--FR";
     TEST_ASSERT_EQUAL_STRING(expected,value);
 }
