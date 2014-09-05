@@ -18,9 +18,7 @@ BuildRequires:	libmaxminddb git
 This provides the MaxMind GeoIP feature.
 
 %prep
-#prep
 rm -rf "%{checkoutName}"
-#rm -rf "%{_builddir}/%{varnishDir}"
 if [ ! -d "%{_builddir}/%{varnishDir}" ]; then
   git clone "%{varnishSrc}" "%{varnishDir}"
   cd "%{_builddir}/%{varnishDir}"
@@ -43,7 +41,6 @@ fi
 
 
 %build
-#build
 cd %{checkoutName}
 mkdir buildinfo
 echo "%{source}" >> buildinfo/source.txt
@@ -57,16 +54,16 @@ make %{?_smp_mflags}
 
 
 %install
-#install
 cd %{checkoutName}
 rm -rf %{buildroot}
+mkdir %{buildroot}
 make install DESTDIR=%{buildroot}
 rm -rf $RPM_BUILD_ROOT
+mkdir $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
 
 %clean
-#clean
 rm -rf $RPM_BUILD_ROOT
 rm -rf %{buildroot}
 rm -rf %{checkoutName}
