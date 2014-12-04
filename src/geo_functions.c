@@ -402,3 +402,73 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         fclose(f);
     }
 }
+
+char *
+get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
+{
+    char* found = strstr(cookiestr, cookiename);
+    char* result = NULL;
+    if (found != NULL) {
+        found+= strlen(cookiename);
+        if (*found == '=') {
+            found++; // move past the = sign
+        }
+
+        // find the end. cookies are name=value; name=value;
+        char* end = strstr(found, ";");
+
+        // the cookie could be the end of the string
+        // if so, make end == the end of found
+        if (end == NULL) {
+            end = found;
+            end += strlen(found);
+        }
+        
+        // how long is our string
+        int len = end - found;
+        
+        result = calloc(sizeof(char), len);
+        char* workon = result;
+        do {
+            *workon = *found;
+            workon++;
+            found++;
+        } while (found != end && *found != '|');
+    }
+    return result;
+}
+
+char *
+get_cookie(const char *cookiestr, const char *cookiename)
+{
+    char* found = strstr(cookiestr, cookiename);
+    char* result = NULL;
+    if (found != NULL) {
+        found+= strlen(cookiename);
+        if (*found == '=') {
+            found++; // move past the = sign
+        }
+
+        // find the end. cookies are name=value; name=value;
+        char* end = strstr(found, ";");
+
+        // the cookie could be the end of the string
+        // if so, make end == the end of found
+        if (end == NULL) {
+            end = found;
+            end += strlen(found);
+        }
+        
+        // how long is our string
+        int len = end - found;
+        
+        result = calloc(sizeof(char), len);
+        char* workon = result;
+        do {
+            *workon = *found;
+            workon++;
+            found++;
+        } while (found != end && *found != ';' && *found != ' ');
+    }
+    return result;
+}

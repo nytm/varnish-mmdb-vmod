@@ -35,6 +35,8 @@ extern void test_ParisFranceIP(void);
 extern void test_LookupCity(void);
 extern void test_LookupState(void);
 extern void test_LookupCountry(void);
+extern void test_GetWeatherCode(void);
+extern void test_GetCookie(void);
 
 
 //=======Test Reset Option=====
@@ -57,6 +59,8 @@ int main(void)
   RUN_TEST(test_LookupCity, 48);
   RUN_TEST(test_LookupState, 57);
   RUN_TEST(test_LookupCountry, 66);
+  RUN_TEST(test_GetWeatherCode, 75);
+  RUN_TEST(test_GetCookie, 100);
 
   return (UnityEnd());
 }

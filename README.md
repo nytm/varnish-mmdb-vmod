@@ -62,6 +62,7 @@ sub vcl_recv{
  std.syslog(180, geo.city(req.http.X-Forwarded-For));
  std.syslog(180, geo.country(req.http.X-Forwarded-For));
 }
+
 ```
 
 ## Testing

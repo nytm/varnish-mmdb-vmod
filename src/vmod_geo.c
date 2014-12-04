@@ -25,14 +25,14 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 const char *
 vmod_lookup(struct sess *sp, const char *ipstr, const char **lookup_path)
 {
-    char *data = NULL;
+    const char *data;
     char *cp   = NULL;
 
     data = geo_lookup(ipstr,lookup_path);
 
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
-        free(data);
+        free((void *)data);
     }
         
     return cp;
@@ -94,4 +94,32 @@ const char*
 vmod_weather_code(struct sess *sp, const char *ipstr)
 {
     return vmod_lookup_weathercode(sp, ipstr);
+}
+
+const char *
+vmod_get_weather_cookie(struct sess *sp, const char *cookiestr, const char *cookiename)
+{
+    char *data = NULL;
+    char *cp   = NULL;
+    data = get_weather_code_from_cookie(cookiestr, cookiename);
+
+    if (data != NULL) {
+        cp = WS_Dup(sp->wrk->ws, data);
+        free(data);
+    }
+    return cp;
+}
+
+const char *
+vmod_get_cookie(struct sess *sp, const char *cookiestr, const char *cookiename)
+{
+    char *data = NULL;
+    char *cp   = NULL;
+    data = get_cookie(cookiestr, cookiename);
+
+    if (data != NULL) {
+        cp = WS_Dup(sp->wrk->ws, data);
+        free(data);
+    }
+    return cp;
 }
