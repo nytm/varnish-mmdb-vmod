@@ -63,3 +63,11 @@ sub vcl_recv{
  std.syslog(180, geo.country(req.http.X-Forwarded-For));
 }
 ```
+
+## Testing
+You can add tests in src/tests. Use src/tests/test01.vtc as an example or check out https://github.com/varnish/libvmod-example to see how their done. **NOTE** you will need to 
+
+```
+cd src
+make tests/*
+```
