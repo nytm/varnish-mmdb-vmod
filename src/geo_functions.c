@@ -410,10 +410,14 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
     char* result = NULL;
     if (found != NULL) {
         found+= strlen(cookiename);
+	
         if (*found == '=') {
             found++; // move past the = sign
         }
 
+        if (*found == ';' || *found == ' ') {
+            return result;
+        }
         // find the end. cookies are name=value; name=value;
         char* end = strstr(found, ";");
 
@@ -426,7 +430,6 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
         
         // how long is our string
         int len = end - found;
-        
         result = calloc(sizeof(char), len);
         char* workon = result;
         do {
@@ -445,10 +448,13 @@ get_cookie(const char *cookiestr, const char *cookiename)
     char* result = NULL;
     if (found != NULL) {
         found+= strlen(cookiename);
+	
         if (*found == '=') {
             found++; // move past the = sign
         }
-
+        if (*found == ';' || *found == ' ') {
+            return result;
+        }
         // find the end. cookies are name=value; name=value;
         char* end = strstr(found, ";");
 
