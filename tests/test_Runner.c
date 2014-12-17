@@ -23,6 +23,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include "vmod_geo.h"
+#include <string.h>
 #include <maxminddb.h>
 
 //=======External Functions This Runner Calls=====
@@ -37,6 +38,9 @@ extern void test_LookupState(void);
 extern void test_LookupCountry(void);
 extern void test_GetWeatherCode(void);
 extern void test_GetCookie(void);
+extern void test_GetEmptyCookie();
+extern void test_GetEmptyCookieA();
+extern void test_GetEmptyCookieB();
 
 
 //=======Test Reset Option=====
@@ -52,15 +56,18 @@ int main(void)
 {
   UnityBegin();
   Unity.TestFile = "tests.c";
-  RUN_TEST(test_OpenMMDB, 15);
-  RUN_TEST(test_BadIP, 22);
-  RUN_TEST(test_CaliforniaIP, 31);
-  RUN_TEST(test_ParisFranceIP, 40);
-  RUN_TEST(test_LookupCity, 48);
-  RUN_TEST(test_LookupState, 57);
-  RUN_TEST(test_LookupCountry, 66);
-  RUN_TEST(test_GetWeatherCode, 75);
-  RUN_TEST(test_GetCookie, 100);
+  RUN_TEST(test_OpenMMDB, 16);
+  RUN_TEST(test_BadIP, 23);
+  RUN_TEST(test_CaliforniaIP, 32);
+  RUN_TEST(test_ParisFranceIP, 41);
+  RUN_TEST(test_LookupCity, 49);
+  RUN_TEST(test_LookupState, 58);
+  RUN_TEST(test_LookupCountry, 67);
+  RUN_TEST(test_GetWeatherCode, 76);
+  RUN_TEST(test_GetCookie, 101);
+  RUN_TEST(test_GetEmptyCookie, 111);
+  RUN_TEST(test_GetEmptyCookieA, 120);
+  RUN_TEST(test_GetEmptyCookieB, 130);
 
   return (UnityEnd());
 }

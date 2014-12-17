@@ -403,59 +403,45 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
     }
 }
 
+// we only want the first part of the cookie, up to the |
 char *
 get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
 {
-    char* found = strstr(cookiestr, cookiename);
-    char* result = NULL;
+    char* found = get_cookie(cookiestr, cookiename);
     if (found != NULL) {
-        found+= strlen(cookiename);
-	
-        if (*found == '=') {
-            found++; // move past the = sign
-        }
 
-        if (*found == ';' || *found == ' ') {
-            return result;
-        }
-        // find the end. cookies are name=value; name=value;
-        char* end = strstr(found, ";");
-
-        // the cookie could be the end of the string
-        // if so, make end == the end of found
-        if (end == NULL) {
-            end = found;
-            end += strlen(found);
+        char* sep = strstr(found, "|");
+        if (sep != NULL) {
+            *sep = '\0';
         }
         
-        // how long is our string
-        int len = end - found;
-        result = calloc(sizeof(char), len);
-        char* workon = result;
-        do {
-            *workon = *found;
-            workon++;
-            found++;
-        } while (found != end && *found != '|');
     }
-    return result;
+    return found;
 }
 
+// https://www.ietf.org/rfc/rfc2109.txt
 char *
 get_cookie(const char *cookiestr, const char *cookiename)
 {
     char* found = strstr(cookiestr, cookiename);
     char* result = NULL;
+
     if (found != NULL) {
         found+= strlen(cookiename);
-	
-        if (*found == '=') {
+
+        // cookies can have white space after the name, before the =
+        while (*found != '=') {
             found++; // move past the = sign
         }
-        if (*found == ';' || *found == ' ') {
+        found++;
+
+        // we should not have any white space after the = symbol
+        // and if the next char is a ; there is no value for the cookie
+        if (*found == NULL || *found == ';' || *found == ' ') {
             return result;
         }
-        // find the end. cookies are name=value; name=value;
+
+        // find the end of the cookie. cookies are name=value; 
         char* end = strstr(found, ";");
 
         // the cookie could be the end of the string
