@@ -27,6 +27,7 @@ if [ ! -d "%{_builddir}/%{varnishDir}" ]; then
   git checkout 1a89b1f75895bbf874e83cfc6f6123737a3fd76f
   ./autogen.sh
   ./configure --prefix=/usr
+  make clean
   make
   cd  "%{_builddir}"
 fi
@@ -50,6 +51,7 @@ git remote --verbose show -n origin > buildinfo/origin.txt
 git log --max-count=1 --pretty=fuller > buildinfo/log.txt
 ./autogen.sh
 %configure VARNISHSRC=%{_builddir}/%{varnishDir} VMODDIR=%{_libdir}/varnish/vmods --with-maxminddbfile=/mnt/mmdb/GeoIP2-City.mmdb
+make clean
 make %{?_smp_mflags}
 
 
