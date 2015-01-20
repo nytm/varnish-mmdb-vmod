@@ -19,3 +19,5 @@ else
 	@false
 endif
 
+test:
+	tests/testrunner
