@@ -437,7 +437,7 @@ get_cookie(const char *cookiestr, const char *cookiename)
 
         // we should not have any white space after the = symbol
         // and if the next char is a ; there is no value for the cookie
-        if (*found == NULL || *found == ';' || *found == ' ') {
+        if (*found == '\0' || *found == ';' || *found == ' ') {
             return result;
         }
 
@@ -452,7 +452,7 @@ get_cookie(const char *cookiestr, const char *cookiename)
         }
         
         // how long is our string
-        int len = end - found;
+        int len = end - found + 1;
         
         result = calloc(sizeof(char), len);
         char* workon = result;
