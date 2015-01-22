@@ -5,7 +5,7 @@
 
 Name:		mmdb-vmod
 Version:	1.0.1
-Release:	1%{?dist}
+Release:	%{_build_number}%{?dist}
 Summary:	A varnish module to do IP lookup using libmaxminddb
 Group:		Content APIS/DU
 License:	Proprietary
