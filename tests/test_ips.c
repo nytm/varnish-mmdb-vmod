@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	MMDB_s *mmdb_handle = get_handle();
+	MMDB_s *mmdb_handle = NULL;
     int mmdb_baddb = open_mmdb(mmdb_handle);
 	if (mmdb_baddb) {
 		fprintf(stderr, "There was a problem opening %s\n", MMDB_CITY_PATH);
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 		if (c != NULL) {
 			*c = '\0';
 		}
-		c = geo_lookup_weather(ipaddr, 0);
+		c = geo_lookup_weather(mmdb_handle, ipaddr, 0);
 		int index, end, count;
 
 		count = 0;
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 			if (c[index] == '-')
 				count+=1;
 			if (count > 2) {
-				dump_failed_lookup(ipaddr, debugfile);
+				dump_failed_lookup(mmdb_handle, ipaddr, debugfile);
 				break;
 			}
 		}

@@ -25,6 +25,7 @@
 #include "vmod_geo.h"
 #include <string.h>
 #include <maxminddb.h>
+#include <float.h>
 
 //=======External Functions This Runner Calls=====
 extern void setUp(void);
@@ -40,7 +41,12 @@ extern void test_GetWeatherCode(void);
 extern void test_GetCookie(void);
 extern void test_GetEmptyCookie();
 extern void test_GetEmptyCookieA();
+extern void test_GetEmptyCookieAb();
 extern void test_GetEmptyCookieB();
+extern void test_GetEmptyCookieC();
+extern void test_GetEmptyCookieD();
+extern void test_GetEmptyCookieE();
+extern void test_GetEmptyCookieF();
 
 
 //=======Test Reset Option=====
@@ -56,18 +62,23 @@ int main(void)
 {
   UnityBegin();
   Unity.TestFile = "tests.c";
-  RUN_TEST(test_OpenMMDB, 16);
-  RUN_TEST(test_BadIP, 23);
-  RUN_TEST(test_CaliforniaIP, 32);
-  RUN_TEST(test_ParisFranceIP, 41);
-  RUN_TEST(test_LookupCity, 49);
-  RUN_TEST(test_LookupState, 58);
-  RUN_TEST(test_LookupCountry, 67);
-  RUN_TEST(test_GetWeatherCode, 76);
-  RUN_TEST(test_GetCookie, 101);
-  RUN_TEST(test_GetEmptyCookie, 111);
-  RUN_TEST(test_GetEmptyCookieA, 120);
-  RUN_TEST(test_GetEmptyCookieB, 130);
+  RUN_TEST(test_OpenMMDB, 24);
+  RUN_TEST(test_BadIP, 30);
+  RUN_TEST(test_CaliforniaIP, 39);
+  RUN_TEST(test_ParisFranceIP, 48);
+  RUN_TEST(test_LookupCity, 56);
+  RUN_TEST(test_LookupState, 65);
+  RUN_TEST(test_LookupCountry, 74);
+  RUN_TEST(test_GetWeatherCode, 83);
+  RUN_TEST(test_GetCookie, 108);
+  RUN_TEST(test_GetEmptyCookie, 118);
+  RUN_TEST(test_GetEmptyCookieA, 127);
+  RUN_TEST(test_GetEmptyCookieAb, 135);
+  RUN_TEST(test_GetEmptyCookieB, 145);
+  RUN_TEST(test_GetEmptyCookieC, 157);
+  RUN_TEST(test_GetEmptyCookieD, 169);
+  RUN_TEST(test_GetEmptyCookieE, 182);
+  RUN_TEST(test_GetEmptyCookieF, 196);
 
   return (UnityEnd());
 }

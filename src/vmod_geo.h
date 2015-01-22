@@ -22,15 +22,19 @@ open_mmdb(MMDB_s *);
 char *
 get_value(MMDB_lookup_result_s *, const char **);
 
+
 const char *
-geo_lookup(const char *ipstr, const char **lookup_path);
+geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path);
 
+// a utility function. Suppose you have an IP that you tought failed
+// you can run this to see what came back from the maxmind db 
+// lookup
 void
-dump_failed_lookup(const char *ipstr, const char *file_to_write_to);
+dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *file_to_write_to);
 
-
+// lookup an NYT weather code from ip address
 char *
-geo_lookup_weather(const char *ipstr, int use_default);
+geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
 
 
 // the cookie header can be too big for regusub or regusuball so we need

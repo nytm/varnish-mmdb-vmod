@@ -1,7 +1,15 @@
 #include "unity.h"
 #include <string.h>
 #include <maxminddb.h>
+#include <float.h>
 #include "vmod_geo.h"
+
+MMDB_s handle;
+MMDB_s *mmdb_handle = &handle;
+MMDB_s *
+get_handle(void) {
+    return mmdb_handle;
+}
 
 void setUp(void)
 {
@@ -15,7 +23,6 @@ void tearDown(void)
 
 void test_OpenMMDB(void)
 {
-    MMDB_s *mmdb_handle = get_handle();
     int mmdb_baddb = open_mmdb(mmdb_handle);
     TEST_ASSERT_EQUAL_INT(0,mmdb_baddb);
 }
@@ -24,7 +31,7 @@ void test_BadIP(void)
 {
 
     char * ip = "127.0.0.1";
-    char * value = geo_lookup_weather(ip,1);
+    char * value = geo_lookup_weather(mmdb_handle, ip,1);
     char * expected = "New YorkNYUS";
     TEST_ASSERT_EQUAL_STRING(expected,value);
 }
@@ -33,7 +40,7 @@ void test_CaliforniaIP(void)
 {
 
     char * ip = "199.254.0.98";
-    char * value = geo_lookup_weather(ip,1);
+    char * value = geo_lookup_weather(mmdb_handle, ip,1);
     char * expected = "Beverly HillsCAUS";
     TEST_ASSERT_EQUAL_STRING(expected,value);
 }
@@ -41,7 +48,7 @@ void test_CaliforniaIP(void)
 void test_ParisFranceIP(void)
 {
     char * ip = "88.190.229.170";
-    char * value = geo_lookup_weather(ip,1);
+    char * value = geo_lookup_weather(mmdb_handle, ip,1);
     char * expected = "Paris--FR";
     TEST_ASSERT_EQUAL_STRING(expected,value);
 }
@@ -50,7 +57,7 @@ void test_LookupCity(void)
 {
     const char *lookup_path[] = {"city", "names", "en", NULL};
     char *ip = "199.254.0.98";
-    const char *actual = geo_lookup(ip, lookup_path);
+    const char *actual = geo_lookup(mmdb_handle, ip, lookup_path);
     char *expected = "Beverly Hills";
     TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
@@ -59,7 +66,7 @@ void test_LookupState(void)
 {
     const char *lookup_path[] = {"subdivisions", "0", "iso_code", NULL};
     char *ip = "199.254.0.98";
-    const char *actual = geo_lookup(ip, lookup_path);
+    const char *actual = geo_lookup(mmdb_handle, ip, lookup_path);
     char *expected = "CA";
     TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
@@ -68,7 +75,7 @@ void test_LookupCountry(void)
 {
     const char *lookup_path[] = {"country", "iso_code", NULL};
     char *ip = "199.254.0.98";
-    const char *actual = geo_lookup(ip, lookup_path);
+    const char *actual = geo_lookup(mmdb_handle, ip, lookup_path);
     char *expected = "US";
     TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
@@ -125,6 +132,14 @@ void test_GetEmptyCookieA()
   char* actual = get_cookie(cookiestra, cookiename);
   TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
+void test_GetEmptyCookieAb() 
+{
+  const char* cookiestra = "This=name; NYT_W2NYT_W2  =Some; Other=abc";
+  const char* cookiename = "NYT_W2";
+  const char* expected = "Some";
+  char* actual = get_cookie(cookiestra, cookiename);
+  TEST_ASSERT_EQUAL_STRING(expected, actual);
+}
 
 
 void test_GetEmptyCookieB() 
@@ -139,3 +154,58 @@ void test_GetEmptyCookieB()
 
 }
 
+void test_GetEmptyCookieC()
+{
+  const char* cookiestra = "This=name; NYT_W2=; Other=abc";
+  const char* cookiename = "NYT_W2";
+  const char* expected = NULL;
+
+  char* actual = get_cookie(cookiestra, cookiename);
+  printf("I have:%s:\n", actual);
+  TEST_ASSERT_EQUAL_STRING(expected, actual);
+
+}
+
+void test_GetEmptyCookieD()
+{
+  char* cookiestra = "NYT_W2=New%20YorkNYUSÿ|ChicagoILUS|London--UK|Los%20AngelesCAUS|San%20FranciscoCAUS|Tokyo--JP||";
+  const char* cookiename = "NYT_W2";
+  const char* expected = "New%20YorkNYUSÿ";
+  int len = strlen(cookiestra);
+  cookiestra[len] = ' ';
+  cookiestra[len-1] = ' ';
+  char* actual = get_weather_code_from_cookie(cookiestra, cookiename);
+  printf("I have:%s:\n", actual);
+  TEST_ASSERT_EQUAL_STRING(expected, actual);
+
+}
+void test_GetEmptyCookieE()
+{
+  char* cookiestra = "NYT_W2=IndianapolisINUSÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ|ChicagoILUS|London--UK|Los%20AngelesCAUS|San%20FranciscoCAUS|Tokyo--JP||";
+  const char* cookiename = "NYT_W2";
+  const char* expected="IndianapolisINUSÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ";
+  int len = strlen(cookiestra);
+  cookiestra[len] = ' ';
+  cookiestra[len-1] = ' ';
+  char* actual = get_weather_code_from_cookie(cookiestra, cookiename);
+  printf("I have:%s:\n", actual);
+  TEST_ASSERT_EQUAL_STRING(expected, actual);
+
+}
+
+void test_GetEmptyCookieF()
+{
+  char* cookiestra = "NYT_W2=IndianapolisINUS";
+  const char* cookiename = "NYT_W2";
+  const char* expected="IndianapolisINUS";
+
+  char* actual = get_weather_code_from_cookie(cookiestra, cookiename);
+  printf("I have:%s:\n", actual);
+
+  TEST_ASSERT_EQUAL_STRING(expected, actual);
+
+}
+
+
+
+// http://www.nytimes.com/svc/weather/v2/current-and-five-day-forecast.json /svc/weather/v2/current-and-five-day-forecast/CaryNCUS<FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF><FF>^O<CB>^?.json
