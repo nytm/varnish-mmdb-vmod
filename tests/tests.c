@@ -172,8 +172,6 @@ void test_GetEmptyCookieD()
   const char* cookiename = "NYT_W2";
   const char* expected = "New%20YorkNYUSÿ";
   int len = strlen(cookiestra);
-  cookiestra[len] = ' ';
-  cookiestra[len-1] = ' ';
   char* actual = get_weather_code_from_cookie(cookiestra, cookiename);
   printf("I have:%s:\n", actual);
   TEST_ASSERT_EQUAL_STRING(expected, actual);
@@ -185,8 +183,6 @@ void test_GetEmptyCookieE()
   const char* cookiename = "NYT_W2";
   const char* expected="IndianapolisINUSÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ";
   int len = strlen(cookiestra);
-  cookiestra[len] = ' ';
-  cookiestra[len-1] = ' ';
   char* actual = get_weather_code_from_cookie(cookiestra, cookiename);
   printf("I have:%s:\n", actual);
   TEST_ASSERT_EQUAL_STRING(expected, actual);
