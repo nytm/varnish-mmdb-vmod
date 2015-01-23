@@ -1,7 +1,7 @@
 %define checkoutName %{name}-%{version}-%{_build_arch}-%{suffix: %{dist}}
 %define varnishSrc https://github.com/varnish/Varnish-Cache.git
 %define varnishDir VarnishCache-%{_build_arch}
-%define source git@github.com:nytm/varnish-mmdb-vmod.git
+%{!?source: %define source https://github.com/nytm/varnish-mmdb-vmod.git}
 
 Name:		mmdb-vmod
 Version:	1.0.1
