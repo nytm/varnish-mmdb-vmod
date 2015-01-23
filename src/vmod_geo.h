@@ -7,6 +7,8 @@
 #ifndef VMOD_GEO_H
 #define VMOD_GEO_H
 
+MMDB_s mmdb_handle;
+
 MMDB_s *
 get_handle(void);
 
