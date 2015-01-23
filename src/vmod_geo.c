@@ -16,7 +16,6 @@
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf) 
 {
-    MMDB_s mmdb_handle;
     int mmdb_baddb = open_mmdb(&mmdb_handle);
     if (!mmdb_baddb) {
         priv->priv = (void *)&mmdb_handle;
