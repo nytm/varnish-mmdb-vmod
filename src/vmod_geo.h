@@ -7,7 +7,7 @@
 #ifndef VMOD_GEO_H
 #define VMOD_GEO_H
 
-MMDB_s mmdb_handle;
+static MMDB_s mmdb_handle;
 
 MMDB_s *
 get_handle(void);
@@ -24,7 +24,6 @@ open_mmdb(MMDB_s *);
 char *
 get_value(MMDB_lookup_result_s *, const char **);
 
-
 const char *
 geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path);
 
@@ -37,7 +36,6 @@ dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *fil
 // lookup an NYT weather code from ip address
 char *
 geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
-
 
 // the cookie header can be too big for regusub or regusuball so we need
 // a function to pull a cookie value from the Cookie header. Here is an
