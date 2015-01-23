@@ -1,7 +1,7 @@
 %define checkoutName %{name}-%{version}-%{_build_arch}-%{suffix: %{dist}}
 %define varnishSrc https://github.com/varnish/Varnish-Cache.git
 %define varnishDir VarnishCache-%{_build_arch}
-%define source https://github.com/russellsimpkins-nyt/varnish-mmdb-vmod.git
+%define source git@github.com:nytm/varnish-mmdb-vmod.git
 
 Name:		mmdb-vmod
 Version:	1.0.1
@@ -9,10 +9,9 @@ Release:	%{_build_number}%{?dist}
 Summary:	A varnish module to do IP lookup using libmaxminddb
 Group:		Content APIS/DU
 License:	Proprietary
-URL:		https://github.com/russellsimpkins-nyt/varnish-mmdb-vmod
+URL:		https://github.com/nytm/varnish-mmdb-vmod
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-%{_build_arch}-root-%(%{__id_u} -n)
 BuildRequires:	libmaxminddb git
-
 
 %description
 This provides the MaxMind GeoIP feature.
@@ -66,8 +65,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 
 %clean
-rm -rf $RPM_BUILD_ROOT
-rm -rf %{buildroot}
+#rm -rf $RPM_BUILD_ROOT
+#rm -rf %{buildroot}
 rm -rf %{checkoutName}
 
 %files
