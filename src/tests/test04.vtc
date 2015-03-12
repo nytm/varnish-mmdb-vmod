@@ -131,25 +131,24 @@ sub vcl_recv {
     // remove api-key= from the url if it exists
     if ( req.url ~ "api-key=" ) {
         // clean out the api-key
-        set req.http.clean = regsub(req.url, "(api-key=[A-Za-z0-9%]+)", "");
+        set req.http.clean = regsuball(req.url, "(api-key=[A-Za-z0-9%]+)", "");
         set req.http.clean = regsub(req.http.clean, "\?&", "?");
         set req.http.clean = regsub(req.http.clean, "&&",  "&");
         set req.http.clean = regsub(req.http.clean, "&$",  "");
         set req.http.clean = regsub(req.http.clean, "\?$", "");
         set req.url        = req.http.clean;
-        unset req.http.clean;
     }
-
+    std.log("DU_url after 1:" + req.url);
     // remove jquery cache buster if it exists
     if (req.url ~ "(_=[0-9]+)") {
-        set req.http.clean = regsub(req.url, "(_=[0-9]+)", "");
+        set req.http.clean = regsuball(req.url, "(_=[0-9]+)", "");
         set req.http.clean = regsub(req.http.clean, "\?&", "?");
         set req.http.clean = regsub(req.http.clean, "&&",  "&");
         set req.http.clean = regsub(req.http.clean, "&$",  "");
         set req.http.clean = regsub(req.http.clean, "\?$", "");
         set req.url        = req.http.clean;
     }
-
+    std.log("DU_url after 2:" + req.url);
     // Check for use_cache parameters
     if ( req.url ~ "use_cache=false"
          || req.url ~ "use_cache=off"
@@ -269,7 +268,8 @@ sub vcl_deliver {
     else {
         set resp.http.X-Cache = "MISS";
     }
-
+    set resp.http.clean = req.http.clean;
+    
     return(deliver);
 }
 
@@ -281,9 +281,9 @@ sub vcl_error {
     } -start
 
 client c1 {
-	txreq -url "/svc/bitly/srvc.json?api-key=abc%20qwer1234&another=value&_=123412341234&name=value"
+	txreq -url "/svc/bitly/srvc.json?api-key=abc%20qwer1234&another=value&_=123412341234&name=value&_=12341234"
 	rxresp
-    expect resp.body == "1"
+    expect resp.http.clean == "/svc/bitly/srvc.json?another=value&name=value"
 }
 
 client c1 -run

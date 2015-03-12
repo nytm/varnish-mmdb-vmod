@@ -1,0 +1,23 @@
+varnishtest "Test example vmod"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+
+varnish v1 -vcl+backend {
+    
+	sub vcl_deliver {
+       set req.http.Cookie = "/svc/news/v3/content/all/all/.json?offset=320&api-key=5fa60494024b4c3c13ecb72011023ad8%3A11%3A69972922";
+       set resp.http.hello = regsub(req.http.Cookie, "api-key=[a-zA-Z0-9%]+&?", "");
+	}
+} -start
+
+client c1 {
+	txreq -url "/"
+	rxresp
+	expect resp.http.hello == "/svc/news/v3/content/all/all/.json?offset=320&"
+}
+
+client c1 -run

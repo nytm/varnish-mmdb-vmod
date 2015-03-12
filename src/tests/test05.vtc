@@ -3,10 +3,15 @@ varnishtest "Test example vmod"
 server s1 {
        rxreq
        txresp
+       rxreq
+       txresp
+       rxreq
+       txresp
 } -start
 
 
 varnish v1 -vcl+backend {
+
 	import geo from "${vmod_topbuild}/src/.libs/libvmod_geo.so";
 	import std;
     
@@ -21,41 +26,42 @@ varnish v1 -vcl+backend {
        set resp.http.Empty1Test = geo.get_weather_cookie(req.http.Cookie, "NYT_W2");
        set req.http.Cookie = "NYT-Edition=edition|US; localytics.js=1; NYT_W2=; RMID=007f01002c15543d3ed50004";
        set resp.http.Empty2Test = geo.get_weather_cookie(req.http.Cookie, "NYT_W2");
-       set resp.http.Country = geo.country_code("193.55.93.2");
+
+       set resp.http.BoolVal     = regsub(req.url, "^.*(use_cache=false|use_cache=true).*$", "\1");
+       set resp.http.burl = regsub(req.url, "(use_cache=false|use_cache=off|use_cache=no)", "");
+       set resp.http.burl = regsub(resp.http.burl, "\?&", "?");
+       set resp.http.burl = regsub(resp.http.burl, "\?$", "");
        
+       set resp.http.apikeyclean = regsub(req.url, "(api-key=[A-Za-z0-9%]+)", "");
+       set resp.http.apikeyclean = regsub(resp.http.apikeyclean, "\?&", "?");
+       set resp.http.apikeyclean = regsub(resp.http.apikeyclean, "\?$", "");
+
+       set resp.http.jquery      = regsub(req.url, "(_=[0-9]+)", "");
+       set resp.http.jquery      = regsub(resp.http.jquery, "&$", "");
 	}
+
 } -start
 
 client c1 {
-	txreq -url "/"
+	txreq -url "/info?use_cache=false" 
 	rxresp
-    expect resp.http.fromBig == "New%20YorkNYUS"
+    expect resp.http.BoolVal == "use_cache=false"
+    expect resp.http.burl == "/info"
 }
+
 client c2 {
-	txreq -url "/"
+	txreq -url "/svc/mostpopular/v2/mostviewed/all-sections/1.json?api-key=ec6c3dedfa9c3faff413ab1b50238847%3A9%3A68891603"
 	rxresp
-    expect resp.http.EndTest == "New%20YorkNYUS"
+    expect resp.http.apikeyclean == "/svc/mostpopular/v2/mostviewed/all-sections/1.json"
 }
+
 client c3 {
-	txreq -url "/"
+	txreq -url "/svc/weather/v2/current-and-five-day-forecast/ip.jsonp?callback=jQuery21109923271487932652_1423729674602&_=1423729674603" 
 	rxresp
-    expect resp.http.EndPipeTest == "New%20YorkNYUS"
-}
-client c4 {
-	txreq -url "/"
-	rxresp
-    expect resp.http.Empty1Test == ""
-
-}
-client c5 {
-	txreq -url "/"
-	rxresp
-    expect resp.http.Country == "FR"
-
+    expect resp.http.jquery == "/svc/weather/v2/current-and-five-day-forecast/ip.jsonp?callback=jQuery21109923271487932652_1423729674602"
 }
 
 client c1 -run
 client c2 -run
 client c3 -run
-client c4 -run
-client c5 -run
+
