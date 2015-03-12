@@ -54,6 +54,25 @@ This will work with the free data or the licensed data.
 
 
 ## Example
+This vmod gives you the following functions:
+```
+geo.country("170.149.100.10")
+geo.country_code("170.149.100.10")
+geo.region("170.149.100.10")
+geo.metro_code("170.149.100.10")
+geo.city("170.149.100.10")
+
+# DUspecific stuff
+geo.weather_code("170.149.100.10")
+geo.get_weather_cookie(req.http.Cookie, "NYT_W2")
+
+# Generic get cookie value from http cookie header
+geo.get_cookie(req.http.Cookie, "NYT_W2")
+
+
+```
+
+Here is some very basic usage:
 
 ```
 import geo;
@@ -65,6 +84,15 @@ sub vcl_recv{
  std.syslog(180, geo.country(req.http.X-Forwarded-For));
 }
 
+```
+Here is how I use it:
+```
+import std;
+import geo;
+....
+set req.http.X-Weather = geo.get_weather_cookie(req.http.Cookie, "NYT_W2");
+set req.http.X-Weather = geo.weather_code(req.http.IP);
+set req.http.X-Weather = regsuball(req.http.X-Weather, " ", "%20");
 ```
 
 ## Testing
