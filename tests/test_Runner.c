@@ -62,23 +62,23 @@ int main(void)
 {
   UnityBegin();
   Unity.TestFile = "tests.c";
-  RUN_TEST(test_OpenMMDB, 24);
-  RUN_TEST(test_BadIP, 30);
-  RUN_TEST(test_CaliforniaIP, 39);
-  RUN_TEST(test_ParisFranceIP, 48);
-  RUN_TEST(test_LookupCity, 56);
-  RUN_TEST(test_LookupState, 65);
-  RUN_TEST(test_LookupCountry, 74);
-  RUN_TEST(test_GetWeatherCode, 83);
-  RUN_TEST(test_GetCookie, 108);
-  RUN_TEST(test_GetEmptyCookie, 118);
-  RUN_TEST(test_GetEmptyCookieA, 127);
-  RUN_TEST(test_GetEmptyCookieAb, 135);
-  RUN_TEST(test_GetEmptyCookieB, 145);
-  RUN_TEST(test_GetEmptyCookieC, 157);
-  RUN_TEST(test_GetEmptyCookieD, 169);
-  RUN_TEST(test_GetEmptyCookieE, 182);
-  RUN_TEST(test_GetEmptyCookieF, 196);
+  RUN_TEST(test_OpenMMDB, 22);
+  RUN_TEST(test_BadIP, 28);
+  RUN_TEST(test_CaliforniaIP, 36);
+  RUN_TEST(test_ParisFranceIP, 44);
+  RUN_TEST(test_LookupCity, 52);
+  RUN_TEST(test_LookupState, 61);
+  RUN_TEST(test_LookupCountry, 70);
+  RUN_TEST(test_GetWeatherCode, 79);
+  RUN_TEST(test_GetCookie, 104);
+  RUN_TEST(test_GetEmptyCookie, 114);
+  RUN_TEST(test_GetEmptyCookieA, 123);
+  RUN_TEST(test_GetEmptyCookieAb, 131);
+  RUN_TEST(test_GetEmptyCookieB, 141);
+  RUN_TEST(test_GetEmptyCookieC, 153);
+  RUN_TEST(test_GetEmptyCookieD, 165);
+  RUN_TEST(test_GetEmptyCookieE, 175);
+  RUN_TEST(test_GetEmptyCookieF, 185);
 
   return (UnityEnd());
 }
