@@ -27,6 +27,16 @@ git checkout 1a89b1f75895bbf874e83cfc6f6123737a3fd76f
 ./configure --prefix=/usr/local
 make
 make install
+
+NOTE: I received the following after running make:
+
+**You need rst2man installed to make dist**
+
+I was able to get past this by installing python-docutils with:
+yum install python-docutils
+
+I then reran everything from ./autogen.sh onward.
+
 cd ..
 git clone --recursive https://github.com/maxmind/libmaxminddb.git
 cd libmaxminddb
