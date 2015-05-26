@@ -37,6 +37,10 @@ dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *fil
 char *
 geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
 
+// lookup a location from ip address
+char *
+geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+
 // the cookie header can be too big for regusub or regusuball so we need
 // a function to pull a cookie value from the Cookie header. Here is an
 // example of whour cookie can look like:
