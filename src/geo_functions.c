@@ -18,6 +18,7 @@
 
 static char*  MMDB_CITY_PATH = MAX_CITY_DB;
 static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
+static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"New York\",\"country\":\"United States\"}";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
@@ -193,6 +194,119 @@ get_value(MMDB_lookup_result_s *result, const char **path)
         }
     }
     return value;
+}
+
+char *
+geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+{
+    if (mmdb_handle == NULL) {
+        fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
+        return strdup(DEFAULT_WEATHER_CODE);
+    }
+
+    char *data;
+    // Lookup IP in the DB
+    int ip_lookup_failed, db_status;
+    MMDB_lookup_result_s result =
+        MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
+
+    if (ip_lookup_failed) {
+#if DEBUG
+        fprintf(stderr,
+            "[WARN] vmod_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
+            ipstr, gai_strerror(ip_lookup_failed));
+#endif
+        // we don't want null, if we're not using default
+        if (use_default) {
+            return strdup(DEFAULT_LOCATION);
+        } else {
+            return strdup("--");
+        }
+    }
+
+    if (db_status != MMDB_SUCCESS) {
+#if DEBUG
+        fprintf(stderr,
+            "[ERROR] vmod_lookup_location: libmaxminddb failure. \
+Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
+            MMDB_CITY_PATH,
+            MMDB_strerror(db_status));
+#endif
+        if (use_default) {
+            return strdup(DEFAULT_LOCATION);
+        } else {
+            return strdup("--");
+        }
+    }
+
+    // these varaibles will hold our results
+    char *country = NULL;
+    char *city    = NULL;
+    char *state   = NULL;
+
+    // these are used to extract values from the mmdb
+    const char *country_lookup[] = {"country", "iso_code", NULL};
+    const char *city_lookup[]    = {"city", "names", "en", NULL};
+    const char *state_lookup[]   = {"subdivisions", "0", "iso_code", NULL};
+
+    if (result.found_entry) {
+        country = get_value(&result, country_lookup);
+        city    = get_value(&result, city_lookup);
+
+        if (country != NULL && strcmp(country,"US") == 0) {
+            state = get_value(&result, state_lookup);
+        } else {
+            state = strdup("");
+        }
+
+        // we should always return new york
+        if (country == NULL || city == NULL || state == NULL) {
+
+            if (use_default) {
+                data = strdup(DEFAULT_LOCATION);
+            } else {
+                if (country == NULL) {
+                    country = strdup("");
+                }
+                if (city == NULL) {
+                    city = strdup("");
+                }
+                if (state == NULL) {
+                    state = strdup("");
+                }
+                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) ) + 1;
+                data = malloc(chars);
+                sprintf(data, "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}", city, state, country);
+            }
+        } else {
+            size_t chars = (sizeof(char)* ( strlen(country) + strlen(city) + strlen(state)) ) + 1;
+            data = malloc(chars);
+            sprintf(data, "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}", city, state, country);
+        }
+
+    } else {
+#if DEBUG
+        fprintf(
+            stderr,
+                "[INFO] No entry for this IP address (%s) was found\n",
+                ipstr);
+#endif
+        data = strdup(DEFAULT_LOCATION);
+    }
+    
+    if (country != NULL) {
+        free(country);
+    }
+
+    if (city != NULL) {
+        free(city);
+    }
+
+    if (state != NULL) {
+        free(state);
+    }
+
+    return data;
 }
 
 // This function builds up a code we need to lookup weather
