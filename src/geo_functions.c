@@ -8,7 +8,7 @@
 #include "vmod_geo.h"
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 //**********************************************************************
@@ -16,9 +16,9 @@
 // free the return values.
 //**********************************************************************
 
-static char*  MMDB_CITY_PATH = MAX_CITY_DB;
+static char*  MMDB_CITY_PATH = "/mnt/mmdb/GeoIP2-City.mmdb";
 static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
-static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"New York\",\"country\":\"United States\"}";
+static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
@@ -199,9 +199,9 @@ get_value(MMDB_lookup_result_s *result, const char **path)
 char *
 geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 {
-    if (mmdb_handle == NULL) {
+    if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_WEATHER_CODE);
+        return strdup(DEFAULT_LOCATION);
     }
 
     char *data;
