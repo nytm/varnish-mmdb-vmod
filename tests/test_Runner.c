@@ -71,16 +71,16 @@ int main(void)
   RUN_TEST(test_LookupState, 61);
   RUN_TEST(test_LookupCountry, 70);
   RUN_TEST(test_LookupLocation, 79);
-  RUN_TEST(test_GetWeatherCode, 89);
-  RUN_TEST(test_GetCookie, 114);
-  RUN_TEST(test_GetEmptyCookie, 124);
-  RUN_TEST(test_GetEmptyCookieA, 133);
-  RUN_TEST(test_GetEmptyCookieAb, 141);
-  RUN_TEST(test_GetEmptyCookieB, 151);
-  RUN_TEST(test_GetEmptyCookieC, 163);
-  RUN_TEST(test_GetEmptyCookieD, 175);
-  RUN_TEST(test_GetEmptyCookieE, 185);
-  RUN_TEST(test_GetEmptyCookieF, 195);
+  RUN_TEST(test_GetWeatherCode, 87);
+  RUN_TEST(test_GetCookie, 112);
+  RUN_TEST(test_GetEmptyCookie, 122);
+  RUN_TEST(test_GetEmptyCookieA, 131);
+  RUN_TEST(test_GetEmptyCookieAb, 139);
+  RUN_TEST(test_GetEmptyCookieB, 149);
+  RUN_TEST(test_GetEmptyCookieC, 161);
+  RUN_TEST(test_GetEmptyCookieD, 173);
+  RUN_TEST(test_GetEmptyCookieE, 183);
+  RUN_TEST(test_GetEmptyCookieF, 193);
 
   return (UnityEnd());
 }

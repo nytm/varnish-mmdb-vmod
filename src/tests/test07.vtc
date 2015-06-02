@@ -12,7 +12,7 @@ varnish v1 -vcl+backend {
 
   sub vcl_recv{
    if (req.url ~ "/svc/location/v1/current.json") {
-          set req.http.IP = "127.0.0.1";
+          set req.http.IP = "";
           return (error);
    }
   }
@@ -32,7 +32,7 @@ client c1 {
 	txreq -url "/svc/location/v1/current.json"
 	rxresp
     #default location
-    expect resp.body ==  "{\"city\":\"New York\",\"state\":\"New York\",\"country\":\"United States\"}"
+    expect resp.body ==  "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
 }
 
 client c1 -run

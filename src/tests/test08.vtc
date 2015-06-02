@@ -1,0 +1,24 @@
+varnishtest "Location Service Test"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+
+varnish v1 -vcl+backend {
+	import geo from "${vmod_topbuild}/src/.libs/libvmod_geo.so";
+	import std;
+
+  sub vcl_recv{
+    set req.http.X-Timezone = geo.location("170.149.100.69");
+  }
+} -start
+
+client c1 {
+	txreq -url "/svc/location/v1/current.json"
+	rxresp
+    expect req.http.X-Timezone == "EST"
+}
+
+client c1 -run
