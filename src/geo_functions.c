@@ -8,7 +8,7 @@
 #include "vmod_geo.h"
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 //**********************************************************************
@@ -16,8 +16,7 @@
 // free the return values.
 //**********************************************************************
 
-//static char*  MMDB_CITY_PATH = "/mnt/mmdb/GeoIP2-City.mmdb";
-static char*  MMDB_CITY_PATH = "~/GeoIP2-City.mmdb";
+static char*  MMDB_CITY_PATH = MAX_CITY_DB;
 static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
 static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
 static char*  DEFAULT_TIMEZONE = "{\"timezone\":\"EST\"}";

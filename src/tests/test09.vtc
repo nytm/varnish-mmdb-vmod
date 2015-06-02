@@ -1,8 +1,8 @@
-varnishtest "Timezone Service Default Test"
+varnishtest "Timezone Service Test"
 
 server s1 {
        rxreq
-          expect req.http.X-Timezone == "{\"timezone\":\"America/New_York\"}"
+          expect req.http.X-Timezone == "{\"timezone\":\"America/Los_Angeles\"}"
        txresp
 } -start
 
@@ -12,7 +12,7 @@ varnish v1 -vcl+backend {
 	import std;
 
   sub vcl_recv{
-    set req.http.X-Timezone = geo.timezone("170.149.100.69");
+    set req.http.X-Timezone = geo.timezone("199.254.0.98");
   }
 } -start
 
