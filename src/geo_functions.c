@@ -19,7 +19,7 @@
 static char*  MMDB_CITY_PATH = MAX_CITY_DB;
 static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
 static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
-static char*  DEFAULT_TIMEZONE = "{\"timezone\":\"EST\"}";
+static char*  DEFAULT_TIMEZONE = "{\"timezone\":\"America/New_York\"}";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
