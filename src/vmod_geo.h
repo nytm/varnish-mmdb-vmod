@@ -41,6 +41,10 @@ geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default
 char *
 geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
 
+// lookup a timezone from ip address
+char *
+geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+
 // the cookie header can be too big for regusub or regusuball so we need
 // a function to pull a cookie value from the Cookie header. Here is an
 // example of whour cookie can look like:

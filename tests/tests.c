@@ -75,6 +75,14 @@ void test_LookupCountry(void)
     char *expected = "US";
     TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
+
+void test_LookupLocation(void)
+{
+    char *ip = "199.254.0.98";
+    const char *actual = geo_lookup_location(get_handle(), ip, 1);
+    char *expected = "{\"city\":\"Beverly Hills\",\"state\":\"CA\",\"country\":\"US\"}";
+    TEST_ASSERT_EQUAL_STRING(expected, actual);
+}
 // test to make sure we always get back the first value no matter where the NYT_W2 cookie sits in a large string
 void test_GetWeatherCode(void)
 {

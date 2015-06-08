@@ -67,6 +67,27 @@ vmod_lookup_weathercode(struct sess *sp, struct vmod_priv *global, const char *i
     return cp;
 }
 
+// Lookup up a timezone
+const char *
+vmod_lookup_timezone(struct sess *sp, struct vmod_priv *global, const char *ipstr)
+{
+    char *data           = NULL;
+    char *cp             = NULL;
+    MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
+    if (mmdb_handle == NULL) {
+        fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
+        return NULL;
+    }               
+    data = geo_lookup_timezone(mmdb_handle, ipstr, 1);
+    
+    if (data != NULL) {
+        cp = WS_Dup(sp->wrk->ws, data);
+        free(data);
+    }
+
+    return cp;
+}
+
 // Lookup up a location
 const char *
 vmod_lookup_location(struct sess *sp, struct vmod_priv *global, const char *ipstr)
@@ -133,6 +154,13 @@ const char*
 vmod_weather_code(struct sess *sp, struct vmod_priv *global, const char *ipstr)
 {
     return vmod_lookup_weathercode(sp, global, ipstr);
+}
+
+// lookup a Timezone from ip address
+const char*
+vmod_timezone(struct sess *sp, struct vmod_priv *global, const char *ipstr)
+{
+    return vmod_lookup_timezone(sp, global, ipstr);
 }
 
 // lookup an location from ip address

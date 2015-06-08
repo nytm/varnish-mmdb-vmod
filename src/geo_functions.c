@@ -18,7 +18,8 @@
 
 static char*  MMDB_CITY_PATH = MAX_CITY_DB;
 static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
-static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"New York\",\"country\":\"United States\"}";
+static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
+static char*  DEFAULT_TIMEZONE = "{\"timezone\":\"America/New_York\"}";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
@@ -199,9 +200,9 @@ get_value(MMDB_lookup_result_s *result, const char **path)
 char *
 geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 {
-    if (mmdb_handle == NULL) {
+    if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_WEATHER_CODE);
+        return strdup(DEFAULT_LOCATION);
     }
 
     char *data;
@@ -304,6 +305,84 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 
     if (state != NULL) {
         free(state);
+    }
+
+    return data;
+}
+
+char *
+geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+{
+    if (mmdb_handle == NULL || ipstr == NULL) {
+        fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
+        return strdup(DEFAULT_TIMEZONE);
+    }
+
+    char *data;
+    // Lookup IP in the DB
+    int ip_lookup_failed, db_status;
+    MMDB_lookup_result_s result =
+        MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
+
+    if (ip_lookup_failed) {
+#if DEBUG
+        fprintf(stderr,
+            "[WARN] vmod_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
+            ipstr, gai_strerror(ip_lookup_failed));
+#endif
+        // we don't want null, if we're not using default
+        if (use_default) {
+            return strdup(DEFAULT_TIMEZONE);
+        } else {
+            return strdup("--");
+        }
+    }
+
+    if (db_status != MMDB_SUCCESS) {
+#if DEBUG
+        fprintf(stderr,
+            "[ERROR] vmod_lookup_location: libmaxminddb failure. \
+Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
+            MMDB_CITY_PATH,
+            MMDB_strerror(db_status));
+#endif
+        if (use_default) {
+            return strdup(DEFAULT_TIMEZONE);
+        } else {
+            return strdup("--");
+        }
+    }
+
+    // these varaibles will hold our results
+    char *timezone = NULL;
+
+    // these are used to extract values from the mmdb
+    const char *timezone_lookup[] = {"location", "time_zone", NULL};
+
+    if (result.found_entry) {
+        timezone = get_value(&result, timezone_lookup);
+
+        // we should always return new york
+        if (timezone == NULL) {
+            data = strdup(DEFAULT_TIMEZONE);
+        } else {
+            size_t chars = (sizeof(char)* ( strlen(timezone)) ) + 1;
+            data = malloc(chars);
+            sprintf(data, "{\"timezone\":\"%s\"}", timezone);
+        }
+
+    } else {
+#if DEBUG
+        fprintf(
+            stderr,
+                "[INFO] No entry for this IP address (%s) was found\n",
+                ipstr);
+#endif
+        data = strdup(DEFAULT_TIMEZONE);
+    }
+    
+    if (timezone != NULL) {
+        free(timezone);
     }
 
     return data;
@@ -428,6 +507,8 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 
     return data;
 }
+
+
 
 // a utility function for doing large scale testing
 void

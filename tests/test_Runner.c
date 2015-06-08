@@ -37,6 +37,7 @@ extern void test_ParisFranceIP(void);
 extern void test_LookupCity(void);
 extern void test_LookupState(void);
 extern void test_LookupCountry(void);
+extern void test_LookupLocation(void);
 extern void test_GetWeatherCode(void);
 extern void test_GetCookie(void);
 extern void test_GetEmptyCookie();
@@ -69,16 +70,17 @@ int main(void)
   RUN_TEST(test_LookupCity, 52);
   RUN_TEST(test_LookupState, 61);
   RUN_TEST(test_LookupCountry, 70);
-  RUN_TEST(test_GetWeatherCode, 79);
-  RUN_TEST(test_GetCookie, 104);
-  RUN_TEST(test_GetEmptyCookie, 114);
-  RUN_TEST(test_GetEmptyCookieA, 123);
-  RUN_TEST(test_GetEmptyCookieAb, 131);
-  RUN_TEST(test_GetEmptyCookieB, 141);
-  RUN_TEST(test_GetEmptyCookieC, 153);
-  RUN_TEST(test_GetEmptyCookieD, 165);
-  RUN_TEST(test_GetEmptyCookieE, 175);
-  RUN_TEST(test_GetEmptyCookieF, 185);
+  RUN_TEST(test_LookupLocation, 79);
+  RUN_TEST(test_GetWeatherCode, 87);
+  RUN_TEST(test_GetCookie, 112);
+  RUN_TEST(test_GetEmptyCookie, 122);
+  RUN_TEST(test_GetEmptyCookieA, 131);
+  RUN_TEST(test_GetEmptyCookieAb, 139);
+  RUN_TEST(test_GetEmptyCookieB, 149);
+  RUN_TEST(test_GetEmptyCookieC, 161);
+  RUN_TEST(test_GetEmptyCookieD, 173);
+  RUN_TEST(test_GetEmptyCookieE, 183);
+  RUN_TEST(test_GetEmptyCookieF, 193);
 
   return (UnityEnd());
 }

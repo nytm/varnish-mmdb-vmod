@@ -1,0 +1,37 @@
+varnishtest "Location Service Test For Default"
+
+server s1 {
+       rxreq
+       txresp
+} -start
+
+
+varnish v1 -vcl+backend {
+	import geo from "${vmod_topbuild}/src/.libs/libvmod_geo.so";
+	import std;
+
+  sub vcl_recv{
+   if (req.url ~ "/svc/location/v1/current.json") {
+          set req.http.IP = "";
+          return (error);
+   }
+  }
+
+  sub vcl_error {
+      if (req.url ~ "/svc/location/v1/current.json") {
+          set obj.http.Content-Type = "text/json; charset=utf-8";
+          synthetic
+              geo.location(req.http.IP)
+          ;
+          return (deliver);
+      }
+  }
+} -start
+
+client c1 {
+	txreq -url "/svc/location/v1/current.json"
+	rxresp
+    expect resp.body ==  "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}"
+}
+
+client c1 -run
