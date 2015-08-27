@@ -2,7 +2,7 @@
 
 rpmbuild -bb ${WORKSPACE}/mmdb-vmod.spec --define "_build_number ${BUILD_NUMBER}" --define "_source ${WORKSPACE}"
 for e in $(find ~/rpmbuild/RPMS -name mmdb-vmod\*.rpm); do
-    # sign-rpm $e
-    publish-rpm $e
+    /usr/bin/sign-rpm $e
+    /usr/bin/publish-rpm $e
     rm -f $e
 done
