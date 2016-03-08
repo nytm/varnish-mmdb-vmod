@@ -103,9 +103,12 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 
         if (entry_data.has_data) {
             switch(entry_data.type) {
-            case MMDB_DATA_TYPE_UTF8_STRING:
+            case MMDB_DATA_TYPE_UTF8_STRING: {
+                int extra = entry_data.data_size % 8;
+                fprintf(stderr, "Extra is %d\n", extra);
                 data = strndup(entry_data.utf8_string, entry_data.data_size);
                 break;
+            }
             case MMDB_DATA_TYPE_UINT16: {
                 uint16_t num = UINT16_MAX;
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
@@ -280,9 +283,13 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 sprintf(data, "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}", city, state, country);
             }
         } else {
-            size_t chars = (sizeof(char)* ( strlen(country) + strlen(city) + strlen(state)) ) + 1;
-            data = malloc(chars);
-            sprintf(data, "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}", city, state, country);
+            size_t chars = (sizeof(char)* (strlen(country) + strlen(city) + strlen(state)));
+            const char* fmt = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+            chars += sizeof(char) * strlen(fmt);
+            chars -= sizeof(char) * 6; // reduce by the number of %s
+            data = malloc(chars+1);
+            
+            sprintf(data, fmt, city, state, country);
         }
 
     } else {
@@ -666,7 +673,7 @@ get_cookie(const char *cookiestr, const char *cookiename)
 
     int len      = end - found;
     char* result = NULL;
-    result = calloc(sizeof(char), len+1);
+    result = (char*)calloc(sizeof(char), len+1);
     if (!result) {
         return NULL;
     }
