@@ -1,4 +1,10 @@
-varnishtest "Test example vmod"
+varnishtest "Testing the functionality of removing bad data"
+
+########################################################################
+# anther test to make sure my regex logic works after cleaning out inline c
+# this is a copy/paste of our VCL. I wanted to test much closer to what we
+# have in our VCL today.
+########################################################################
 
 server s1 {
        rxreq
@@ -278,7 +284,8 @@ sub vcl_error {
     synthetic {"<p>"} + obj.response + {"</p>"};
     return(deliver);
 }
-    } -start
+
+} -start
 
 client c1 {
 	txreq -url "/svc/bitly/srvc.json?api-key=abc%20qwer1234&another=value&_=123412341234&name=value&_=12341234"
