@@ -1,4 +1,9 @@
-varnishtest "Test example vmod"
+varnishtest "Testing the get cookie works on a large string"
+
+########################################################################
+# We often get really big cookies. lets test to make sure my code
+# for pulling a cookie value works as expected
+########################################################################
 
 server s1 {
        rxreq
