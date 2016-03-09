@@ -1,5 +1,10 @@
 varnishtest "Location Service Test"
 
+########################################################################
+# make sure all of our expectations for the location service work as
+# expected
+########################################################################
+
 server s1 {
        rxreq
        txresp
