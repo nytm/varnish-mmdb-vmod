@@ -1,5 +1,8 @@
-varnishtest "Test example vmod"
-
+varnishtest "Testing regex to remove the api key"
+########################################################################
+# when I removed some nasty inline C, i needed to make sure my regex
+# would work
+########################################################################
 server s1 {
        rxreq
        txresp
