@@ -29,3 +29,6 @@ CLEANFILES = $(builddir)/vcc_if.c $(builddir)/vcc_if.h
 EXTRA_DIST = \
 	vmod_geo.vcc \
 	$(VMOD_TESTS)
+
+test:
+	$(MAKE) -C tests
