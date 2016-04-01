@@ -117,7 +117,7 @@ vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 }
 
 // lookup a city
-const char*
+VCL_STRING
 vmod_city(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"city", "names", "en", NULL};
@@ -125,7 +125,7 @@ vmod_city(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 }
 
 // lookup a country
-const char*
+VCL_STRING
 vmod_country(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"country", "names", "en", NULL};
