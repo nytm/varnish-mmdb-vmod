@@ -373,9 +373,12 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         if (timezone == NULL) {
             data = strdup(DEFAULT_TIMEZONE);
         } else {
-            size_t chars = (sizeof(char)* ( strlen(timezone)) ) + 1;
-            data = malloc(chars);
-            sprintf(data, "{\"timezone\":\"%s\"}", timezone);
+            size_t chars = (sizeof(char) * (strlen(timezone)) );
+            const char* fmt = "{\"timezone\":\"%s\"}";
+            chars += sizeof(char) * strlen(fmt);
+            chars -= sizeof(char) * 2; // reduce by the number of %s
+            data = malloc(chars+1);
+            sprintf(data, fmt, timezone);
         }
 
     } else {
