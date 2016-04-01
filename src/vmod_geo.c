@@ -121,7 +121,7 @@ const char*
 vmod_city(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"city", "names", "en", NULL};
-    return vmod_lookup(sp, global, ipstr, lookup_path);
+    return vmod_lookup(ctx, global, ipstr, lookup_path);
 }
 
 // lookup a country
@@ -129,7 +129,7 @@ const char*
 vmod_country(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"country", "names", "en", NULL};
-    return vmod_lookup(sp, global, ipstr, lookup_path);
+    return vmod_lookup(ctx, global, ipstr, lookup_path);
 }
 
 // lookup a metro code
@@ -137,7 +137,7 @@ VCL_STRING
 vmod_metro_code(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"location", "metro_code", NULL};
-    return vmod_lookup(sp, global, ipstr, lookup_path);
+    return vmod_lookup(ctx, global, ipstr, lookup_path);
 }
 
 // lookup a region
@@ -145,7 +145,7 @@ VCL_STRING
 vmod_region(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"subdivisions", "0", "iso_code", NULL};
-    return vmod_lookup(sp, global, ipstr, lookup_path);
+    return vmod_lookup(ctx, global, ipstr, lookup_path);
 }
 
 // lookup a country
@@ -153,28 +153,28 @@ VCL_STRING
 vmod_country_code(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     const char *lookup_path[] = {"country", "iso_code", NULL};
-    return vmod_lookup(sp, global, ipstr, lookup_path);
+    return vmod_lookup(ctx, global, ipstr, lookup_path);
 }
 
 // lookup an NYT weather code from ip address
 VCL_STRING
 vmod_weather_code(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
-    return vmod_lookup_weathercode(sp, global, ipstr);
+    return vmod_lookup_weathercode(ctx, global, ipstr);
 }
 
 // lookup a Timezone from ip address
 VCL_STRING
 vmod_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
-    return vmod_lookup_timezone(sp, global, ipstr);
+    return vmod_lookup_timezone(ctx, global, ipstr);
 }
 
 // lookup an location from ip address
 VCL_STRING
 vmod_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
-    return vmod_lookup_location(sp, global, ipstr);
+    return vmod_lookup_location(ctx, global, ipstr);
 }
 
 // get the NYT weather cookie value from the cookie header
