@@ -40,7 +40,7 @@ sub vcl_recv {
         set req.url = regsuball(req.url, "%2A", "*");
         set req.url = regsub(req.url, "^/{1}", "");
         ban("obj.http.x-url ~ " + req.url);
-        error 200 "BAN Set for " + req.url;
+        return (synth(200, "BAN Set for "+ req.url));
     }
 
     if (req.method != "GET" &&
