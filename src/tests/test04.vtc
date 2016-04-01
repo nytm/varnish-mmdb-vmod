@@ -271,7 +271,7 @@ sub vcl_deliver {
 
 // Used for PURGE responses
 sub vcl_backend_error {
-    synthetic({"<p>"} + beresp.response + {"</p>"});
+    synthetic({"<p>"} + beresp.reason + {"</p>"});
     return(deliver);
 }
 
