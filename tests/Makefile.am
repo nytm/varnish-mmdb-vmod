@@ -1,5 +1,5 @@
 AM_CFLAGS = -Wall -D_GNU_SOURCE -DMAX_CITY_DB=\"$(MAX_CITY_DB)\"
-AM_CPPFLAGS = -I$(VARNISHSRC)/include -I$(VARNISHSRC) -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src
 
 tests.c: .FORCE
 	ruby $(top_srcdir)/auto/generate_test_runner.rb tests.c test_Runner.c
