@@ -9,40 +9,15 @@ I forked this vmod to add new features that would allow me to work with our weat
 ## Installation
 This module requires the following:
 
-Varnish cache from https://github.com/varnish/Varnish-Cache
+Varnish 4.1 installed
 
 libmaxminddb from https://github.com/maxmind/libmaxminddb
 
 http://maxmind.github.io/MaxMind-DB/
 
 Get a copy of the free city database from here: https://dev.maxmind.com/geoip/geoip2/geolite2/
-### Step 1 - get the source and build a copy of Varnish
 
-
-```
-cd /usr/local/src
-git clone https://github.com/varnish/Varnish-Cache.git
-cd Varnish-Cache
-git branch 3.0 -t origin/3.0
-git checkout 3.0
-# make sure i'm matching release versions - 3.0.5 in my case.
-git checkout 1a89b1f75895bbf874e83cfc6f6123737a3fd76f
-./autogen.sh
-./configure --prefix=/usr/local
-make
-sudo make install
-```
-
-**NOTE:** I received the following after running make:
-
-``You need rst2man installed to make dist``
-
-I was able to get past this by installing python-docutils with:
-```yum install python-docutils```
-
-I then re-ran everything from ./autogen.sh onward.
-
-### Step 2 - install libmaxmind
+### Step 1 - install libmaxmind
 ```
 cd ..
 git clone --recursive https://github.com/maxmind/libmaxminddb.git
@@ -54,17 +29,20 @@ make
 make install
 cd ..
 ```
-### Step 3 - build the mddb vmod
+### Step 2 - build the mddb vmod
 ```
 git clone git@github.com:nytm/varnish-mmdb-vmod.git
 cd varnish-mmdb-vmod
 ./autogen.sh
-./configure --prefix=/usr --with-maxminddbfile=/mnt/mmdb/GeoIP2-City.mmdb VARNISHSRC=/usr/local/src/Varnish-Cache VMODDIR=/usr/lib64/varnish/vmods
+./configure --prefix=/usr --with-maxminddbfile=/mnt/mmdb/GeoIP2-City.mmdb VMODDIR=/usr/lib64/varnish/vmods 
 make
 make install
 ```
 
 **NOTE** I added support for a flag in autoconf:  **--with-maxminddbfile** so that you can decide, when you build the module, where you're data file will live. If you don't specify a value the default will be used **/mnt/mmdb/GeoIP2-City.mmdb** See src/vmod_geo.h
+**NOTE** Varnish 4.1 installes a package config. If varnish installs the varnish.pc file in the wrong directory, you will need to specify in the configure command e.g. PKG_CONFIG_PATH=/usr/lib/pkgconfig
+
+
 
 ```
 #define MAX_CITY_DB "/mnt/mmdb/GeoLite2-City.mmdb"
