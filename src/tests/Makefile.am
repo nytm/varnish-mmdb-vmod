@@ -4,4 +4,4 @@ TESTS = test01.vtc test02.vtc test03.vtc test04.vtc test05.vtc test06.vtc test07
 test: $(TESTS)
 
 $(TESTS):
-	$(VARNISHSRC)/bin/varnishtest/varnishtest -Dvarnish_source=$(VARNISHSRC) -Dvarnishd=$(VARNISHSRC)/bin/varnishd/varnishd -Dvmod_topbuild=$(abs_top_builddir) $@
+	@VARNISHTEST@ -Dvmod_topbuild=$(abs_top_builddir) $@

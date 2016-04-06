@@ -8,7 +8,7 @@
 #include "vmod_geo.h"
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 //**********************************************************************
@@ -55,12 +55,16 @@ open_mmdb(MMDB_s *mmdb_handle)
 
 // lookup an ip address using the maxmind db and return the value
 // lookup_path described in this doc: http://maxmind.github.io/MaxMind-DB/
-const char *
-geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path)
+int
+geo_lookup(MMDB_s *const mmdb_handle, 
+	   const char *ipstr, 
+	   const char **lookup_path, 
+	   char *data, 
+	   unsigned max_len)
 {
-    char *data = NULL;
     // Lookup IP in the DB
     int gai_error, mmdb_error;
+
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &gai_error, &mmdb_error);
 
@@ -70,7 +74,7 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
             "[INFO] Error from getaddrinfo for %s - %s\n\n",
             ipstr, gai_strerror(gai_error));
 #endif
-        return NULL;
+        return 0;
     }
 
     if (MMDB_SUCCESS != mmdb_error) {
@@ -79,7 +83,7 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
             "[ERROR] Got an error from libmaxminddb: %s\n\n",
             MMDB_strerror(mmdb_error));
 #endif
-        return NULL;
+        return 0;
     }
 
     // Parse results
@@ -98,23 +102,27 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                     MMDB_strerror(status));
 #endif
             exit_code = 4;
-            return NULL;
+            return 0;
         }
 
         if (entry_data.has_data) {
+
             switch(entry_data.type) {
             case MMDB_DATA_TYPE_UTF8_STRING: {
-                int extra = entry_data.data_size % 8;
-                fprintf(stderr, "Extra is %d\n", extra);
-                data = strndup(entry_data.utf8_string, entry_data.data_size);
-                break;
+		if (entry_data.data_size <= max_len) {
+		  strncpy(data, entry_data.utf8_string, (size_t)entry_data.data_size);
+		  data[entry_data.data_size] = '\0'; // the data we're copying doesn't have nulls
+		}
+		return entry_data.data_size;
             }
             case MMDB_DATA_TYPE_UINT16: {
                 uint16_t num = UINT16_MAX;
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
-                data         = calloc(sizeof(char), len+1);
-                snprintf(data, len, "%u", entry_data.uint16);
-                break;
+		if (len+1 < max_len) {
+		  snprintf(data, len++, "%u", entry_data.uint16);
+                  data[len] = '\0';
+		}
+                return len;
             }
             default:
 #if DEBUG
@@ -124,10 +132,10 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                         entry_data.type);
 #endif
                 exit_code = 6;
-                break;
+                return 0;
             }
         } else {
-            return NULL;
+            return 0;
         }
     } else {
 #if DEBUG
@@ -137,9 +145,9 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                 ipstr);
 #endif
         exit_code = 5;
-        return NULL;
+        return 0;
     }
-    return data;
+    return 0;
 }
 
 // Given a valid result and some entry data, lookup a value
@@ -199,16 +207,80 @@ get_value(MMDB_lookup_result_s *result, const char **path)
     }
     return value;
 }
+int
+set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsigned max_len)
+{
+    unsigned wrote = 0;
+    MMDB_entry_data_s entry_data;
+    int status  = MMDB_aget_value( &(*result).entry, &entry_data, path);
+    if (MMDB_SUCCESS != status) {
+        #if DEBUG
+        fprintf(
+            stderr,
+                "[WARN] get_value got an error looking up the entry data. Make sure you use the correct path - %s\n",
+                MMDB_strerror(status));
+        #endif
+        return wrote;
+    }
+    
+    if (entry_data.has_data) {
+        switch(entry_data.type) {
+        case MMDB_DATA_TYPE_UTF8_STRING: {
+            int len = (entry_data.data_size+1);
+            if (len < max_len) {
+                snprintf(write_to, len, "%s", entry_data.utf8_string); // +1 to write the \0
+                wrote = entry_data.data_size;
+            }
+            break;
+        }
+        case MMDB_DATA_TYPE_UINT16: {
+            uint16_t num = UINT16_MAX;
+            int len      = (int)((ceil(log10(num)))*sizeof(char));
+            len++;
+            if (len < max_len) {
+                snprintf(write_to, len--, "%u", entry_data.uint16);
+                wrote = len;
+            }
+            break;
+        }
+        case MMDB_DATA_TYPE_DOUBLE: {
+            double num = DBL_MAX;
+            int len    = (int)((ceil(log10(num)))*sizeof(char));
+            len++;
+            if (len < max_len) {
+                snprintf(write_to, len--, "%f", entry_data.double_value);
+                wrote = len;
+            }
+            break;
+        }
+        case MMDB_DATA_TYPE_BOOLEAN:
+            // i'm assuming true == 1 and false == 0
+            if (2 < max_len) {
+                snprintf(write_to, 2, "%d", entry_data.boolean);
+                wrote = 1;
+            }
+            break;
+        default:
+            #if DEBUG
+            fprintf(
+                stderr,
+                    "[WARN] get_value: No handler for entry data type (%d) was found. \n",
+                    entry_data.type);
+            #endif
+            break;
+        }
+    }
+    return wrote;
+}
 
-char *
-geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+int
+geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len)
 {
     if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_LOCATION);
+        return copy(data, DEFAULT_LOCATION, max_len);
     }
 
-    char *data;
     // Lookup IP in the DB
     int ip_lookup_failed, db_status;
     MMDB_lookup_result_s result =
@@ -222,9 +294,9 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 #endif
         // we don't want null, if we're not using default
         if (use_default) {
-            return strdup(DEFAULT_LOCATION);
+            return copy(data, DEFAULT_LOCATION, max_len);
         } else {
-            return strdup("--");
+            return copy(data, "--", max_len);
         }
     }
 
@@ -237,16 +309,17 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             MMDB_strerror(db_status));
 #endif
         if (use_default) {
-            return strdup(DEFAULT_LOCATION);
+            return copy(data, DEFAULT_LOCATION, max_len);
         } else {
-            return strdup("--");
+            return copy(data, "--", max_len);
         }
     }
 
     // these varaibles will hold our results
-    char *country = NULL;
-    char *city    = NULL;
-    char *state   = NULL;
+    const int MAX = 255;
+    char country[MAX];
+    char city[MAX];
+    char state[MAX];
 
     // these are used to extract values from the mmdb
     const char *country_lookup[] = {"country", "iso_code", NULL};
@@ -254,13 +327,14 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
     const char *state_lookup[]   = {"subdivisions", "0", "iso_code", NULL};
 
     if (result.found_entry) {
-        country = get_value(&result, country_lookup);
-        city    = get_value(&result, city_lookup);
+        int wrote;
+        wrote = set_value(&result, country_lookup, country, MAX);
+        wrote = set_value(&result, city_lookup, city, MAX);
 
         if (country != NULL && strcmp(country,"US") == 0) {
-            state = get_value(&result, state_lookup);
+            wrote = set_value(&result, state_lookup, state, MAX);
         } else {
-            state = strdup("");
+            state[0] = '\0';
         }
 
         // we should always return new york
@@ -270,26 +344,47 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 data = strdup(DEFAULT_LOCATION);
             } else {
                 if (country == NULL) {
-                    country = strdup("");
+                    country[0] = '\n';
                 }
                 if (city == NULL) {
-                    city = strdup("");
+                    city[0] = '\0';
                 }
                 if (state == NULL) {
-                    state = strdup("");
+                    state[0] = '\0';
                 }
-                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) ) + 1;
-                data = malloc(chars);
-                sprintf(data, "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}", city, state, country);
+                size_t len = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) );
+                const char* fmt = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+                len += (sizeof(char) * strlen(fmt));
+                len -= (sizeof(char) * 6);
+                if (len+1 < max_len) {
+                    snprintf(data, len, fmt, city, state, country);
+                    data[len] = '\0';
+                    return len;
+                } else {
+                    if (use_default) {
+                        return copy(data, DEFAULT_LOCATION, max_len);
+                    } else {
+                        return copy(data, "--", max_len);
+                    }
+                }
             }
         } else {
-            size_t chars = (sizeof(char)* (strlen(country) + strlen(city) + strlen(state)));
+            size_t len = (sizeof(char)* (strlen(country) + strlen(city) + strlen(state)));
             const char* fmt = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
-            chars += sizeof(char) * strlen(fmt);
-            chars -= sizeof(char) * 6; // reduce by the number of %s
-            data = malloc(chars+1);
             
-            sprintf(data, fmt, city, state, country);
+            len += sizeof(char) * strlen(fmt);
+            len -= sizeof(char) * 6; // reduce by the number of %s
+            len++; // add for null
+            if (len < max_len) {
+                snprintf(data, len, fmt, city, state, country);
+                return len;
+            } else {
+                if (use_default) {
+                    return copy(data, DEFAULT_LOCATION, max_len);
+                } else {
+                    return copy(data, "--", max_len);
+                }
+            }
         }
 
     } else {
@@ -299,22 +394,9 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 "[INFO] No entry for this IP address (%s) was found\n",
                 ipstr);
 #endif
-        data = strdup(DEFAULT_LOCATION);
-    }
-    
-    if (country != NULL) {
-        free(country);
+        return copy(data, DEFAULT_LOCATION, max_len);
     }
 
-    if (city != NULL) {
-        free(city);
-    }
-
-    if (state != NULL) {
-        free(state);
-    }
-
-    return data;
 }
 
 char *
@@ -365,7 +447,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 
     // these are used to extract values from the mmdb
     const char *timezone_lookup[] = {"location", "time_zone", NULL};
-
+    
     if (result.found_entry) {
         timezone = get_value(&result, timezone_lookup);
 
@@ -374,8 +456,10 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             data = strdup(DEFAULT_TIMEZONE);
         } else {
             size_t chars = (sizeof(char)* ( strlen(timezone)) ) + 1;
+            const char *txt = "{\"timezone\":\"%s\"}";
+            chars += (sizeof(char) * (strlen(txt)-2));
             data = malloc(chars);
-            sprintf(data, "{\"timezone\":\"%s\"}", timezone);
+            sprintf(data, txt, timezone);
         }
 
     } else {
@@ -679,4 +763,17 @@ get_cookie(const char *cookiestr, const char *cookiename)
     }
     strncpy(result, found, len);
     return result;
+}
+
+int
+copy(char *dest, const char *src, unsigned max_len)
+{
+    unsigned len = strlen(src);
+    ++len;
+    if (len < max_len) {
+        strncpy(dest, src, len);
+        dest[len] = '\0';
+        return len;
+    }
+    return 0;
 }

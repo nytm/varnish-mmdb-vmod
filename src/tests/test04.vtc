@@ -27,44 +27,35 @@ sub vcl_fini {
 }
 
 sub vcl_recv {
-    //set req.backend = localhosts;
 
-    if (req.request == "RESTART") {
+    if (req.method == "PURGE") {
         std.log("DU_url:" + req.url);
-        std.log("Received Varnish RESTART request");
-        C{
-            VRT_panic(sp, "VARNISH RESTARTING");
-        }C
+        return(hash);
     }
 
-    if (req.request == "PURGE") {
-        std.log("DU_url:" + req.url);
-        return(lookup);
-    }
-
-    if (req.request == "BAN") {
+    if (req.method == "BAN") {
         std.log("DU_url:" + req.url);
         set req.url = regsuball(req.url, "%2F", "/");
         set req.url = regsuball(req.url, "%5A", "^");
         set req.url = regsuball(req.url, "%2A", "*");
         set req.url = regsub(req.url, "^/{1}", "");
         ban("obj.http.x-url ~ " + req.url);
-        error 200 "BAN Set for " + req.url;
+        return (synth(200, "BAN Set for "+ req.url));
     }
 
-    if (req.request != "GET" &&
-        req.request != "HEAD" &&
-        req.request != "PUT" &&
-        req.request != "POST" &&
-        req.request != "TRACE" &&
-        req.request != "OPTIONS" &&
-        req.request != "DELETE") {
+    if (req.method != "GET" &&
+        req.method != "HEAD" &&
+        req.method != "PUT" &&
+        req.method != "POST" &&
+        req.method != "TRACE" &&
+        req.method != "OPTIONS" &&
+        req.method != "DELETE") {
         // Non-RFC2616 or CONNECT which is weird.
         std.log("DU_url:" + req.url);
         return(pipe);
     }
 
-    if (req.request != "GET" && req.request != "HEAD") {
+    if (req.method != "GET" && req.method != "HEAD") {
         // We only deal with GET and HEAD by default
         std.log("DU_url:" + req.url);
         return(pass);
@@ -130,7 +121,7 @@ sub vcl_recv {
             set req.http.Accept-Encoding = "deflate";
         }
         else {
-            remove req.http.Accept-Encoding;
+            unset req.http.Accept-Encoding;
         }
     }
 
@@ -169,45 +160,43 @@ sub vcl_recv {
 
     // Save the modified URL so varnishncsa shows it
     std.log("DU_url last:" + req.url);
-    return(lookup);
+    return(hash);
 }
 
 sub vcl_hash {
     hash_data(req.url);
-    return(hash);
+    return(lookup);
 }
 
 sub vcl_hit {
-    if (req.request == "PURGE") {
-        purge;
-        error 200 "purged.";
+    if (req.method == "PURGE") {
+        return(synth(200, "purged."));
     }
 }
 
 sub vcl_miss {
-    if (req.request == "PURGE") {
-        purge;
-        error 200 "purged.";
+    if (req.method == "PURGE") {
+        return(synth(200, "purged."));
     }
 
     // Check for X-Use-Cache header and add it back to the url if present
-    if (bereq.http.X-Use-Cache) {
-        if ( bereq.url ~ "\?" ) {
-            set bereq.url = bereq.url + "&" + bereq.http.X-Use-Cache;
+    if (req.http.X-Use-Cache) {
+        if ( req.url ~ "\?" ) {
+            set req.url = req.url + "&" + req.http.X-Use-Cache;
         } else {
-            set bereq.url = bereq.url + "?" + bereq.http.X-Use-Cache;
+            set req.url = req.url + "?" + req.http.X-Use-Cache;
         }
         
-        std.log("DU_url:" + bereq.url);
+        std.log("DU_url:" + req.url);
     }
 }
 
-sub vcl_fetch {
+sub vcl_backend_response {
 
-    remove beresp.http.Via;
+    unset beresp.http.Via;
 
     // Save the req.url so bans work efficiently
-    set beresp.http.x-url = req.url;
+    set beresp.http.x-url = bereq.url;
 
     // Do not cache 500 responses
     if (beresp.status >= 500) {
@@ -218,37 +207,38 @@ sub vcl_fetch {
     else if (beresp.ttl <= 0s ||
              beresp.http.Vary == "*") {
         // Mark as "Hit-For-Pass" for the next 2 minutes
-        set beresp.ttl = 120s;
-        return(hit_for_pass);
+        //set beresp.ttl = 120s;
+        set beresp.uncacheable = true;
+        return(deliver);
     }
 
     // If no TTL header was included then use the DU default TTLs
     if (!(beresp.http.Cache-control || beresp.http.Expires)) {
-        if ( req.url ~ "^/svc/bitly/.*" ) {
+        if ( bereq.url ~ "^/svc/bitly/.*" ) {
             set beresp.ttl = 24h;
         }
-        else if ( req.url ~ "^/svc/books/.*" ) {
+        else if ( bereq.url ~ "^/svc/books/.*" ) {
             set beresp.ttl = 1h;
         }
-        else if ( req.url ~ "^/svc/dining/(v[0-9]+/)?recipes/brief/.*" ) {
+        else if ( bereq.url ~ "^/svc/dining/(v[0-9]+/)?recipes/brief/.*" ) {
             set beresp.ttl = 6h;
         }
-        else if ( req.url ~ "^/svc/movies/.*" ) {
+        else if ( bereq.url ~ "^/svc/movies/.*" ) {
             set beresp.ttl = 12h;
         }
-        else if ( req.url ~ "^/svc/news/.*" ) {
+        else if ( bereq.url ~ "^/svc/news/.*" ) {
             set beresp.ttl = 2m;
         }
-        else if ( req.url ~ "^/svc/semantic/.*" ) {
+        else if ( bereq.url ~ "^/svc/semantic/.*" ) {
             set beresp.ttl = 90m;
         }
-        else if ( req.url ~ "^/svc/topics/v2/markets.*" ) {
+        else if ( bereq.url ~ "^/svc/topics/v2/markets.*" ) {
             set beresp.ttl = 5s;
         }
-        else if ( req.url ~ "^/svc/tv/.*" ) {
+        else if ( bereq.url ~ "^/svc/tv/.*" ) {
             set beresp.ttl = 12h;
         }
-        else if ( req.url ~ "^/svc/weather/.*" ) {
+        else if ( bereq.url ~ "^/svc/weather/.*" ) {
             set beresp.ttl = 30m;
         }
         else {
@@ -280,8 +270,13 @@ sub vcl_deliver {
 }
 
 // Used for PURGE responses
-sub vcl_error {
-    synthetic {"<p>"} + obj.response + {"</p>"};
+sub vcl_backend_error {
+    synthetic({"<p>"} + beresp.reason + {"</p>"});
+    return(deliver);
+}
+
+sub vcl_synth {
+    synthetic({"<p>"} + resp.reason + {"</p>"});
     return(deliver);
 }
 

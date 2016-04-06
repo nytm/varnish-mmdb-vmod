@@ -24,8 +24,11 @@ open_mmdb(MMDB_s *);
 char *
 get_value(MMDB_lookup_result_s *, const char **);
 
-const char *
-geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path);
+int
+set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsigned max_len);
+
+int
+geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path, char *data, unsigned max_len);
 
 // a utility function. Suppose you have an IP that you tought failed
 // you can run this to see what came back from the maxmind db 
@@ -38,8 +41,8 @@ char *
 geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
 
 // lookup a location from ip address
-char *
-geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+int
+geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len);
 
 // lookup a timezone from ip address
 char *
@@ -60,4 +63,7 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename);
 char *
 get_cookie(const char *cookiestr, const char *cookiename);
 
+// copy and add null
+int
+copy(char *dest, const char *src, unsigned max_len);
 #endif

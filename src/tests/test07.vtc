@@ -18,16 +18,14 @@ varnish v1 -vcl+backend {
     sub vcl_recv{
         if (req.url ~ "/svc/location/v1/current.json") {
             set req.http.IP = "";
-            return (error);
+            return(synth(200, "199.254.0.98"));
         }
     }
 
-    sub vcl_error {
-        if (req.url ~ "/svc/location/v1/current.json") {
-            set obj.http.Content-Type = "text/json; charset=utf-8";
-            synthetic geo.location(req.http.IP);
-          return (deliver);
-        }
+    sub vcl_synth {
+        set resp.http.Content-Type = "text/json; charset=utf-8";
+        synthetic(geo.location(req.http.IP));
+        return(deliver);
     }
 } -start
 
