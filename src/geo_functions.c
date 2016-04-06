@@ -630,34 +630,26 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
 char *
 get_cookie(const char *cookiestr, const char *cookiename)
 {
-    const char *found = cookiestr;
+    const char *found;
 
-    do {
-        found = strstr(found, cookiename);
-
-        if (found == NULL) {
-            return NULL;
-        }
-
-        found += strlen(cookiename);
-
-        // next character has to be equal or space
-        if (*found == ' ' || *found == '=') {
-            break;
-        }
-
-    } while(found);
+    found = strstr(cookiestr, cookiename);
+    
+    if (found == NULL) {
+        return NULL;
+    }
+    
+    found += strlen(cookiename);
 
     // cookies can have white space after the name, before the =
     while (*found && *found != '=') {
-        ++found; // move past the = sign
+        ++found; // move forward
     }
 
     // should be at equal at this point
     if (*found != '=') {
         return NULL;
     }
-    ++found;
+    ++found; // move past the =
 
     // we should not have any white space after the = symbol
     // and if the next char is a ; there is no value for the cookie
