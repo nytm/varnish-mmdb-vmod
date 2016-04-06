@@ -20,15 +20,13 @@ Get a copy of the free city database from here: https://dev.maxmind.com/geoip/ge
 
 
 ```
-cd /usr/local/src
+cd /mnt/src
 git clone https://github.com/varnish/Varnish-Cache.git
 cd Varnish-Cache
-git branch 3.0 -t origin/3.0
-git checkout 3.0
-# make sure i'm matching release versions - 3.0.5 in my case.
-git checkout 1a89b1f75895bbf874e83cfc6f6123737a3fd76f
+git branch 4.1 -t origin/4.1
+git checkout 4.1
 ./autogen.sh
-./configure --prefix=/usr/local
+./configure --prefix=/usr
 make
 sudo make install
 ```
@@ -59,7 +57,7 @@ cd ..
 git clone git@github.com:nytm/varnish-mmdb-vmod.git
 cd varnish-mmdb-vmod
 ./autogen.sh
-./configure --prefix=/usr --with-maxminddbfile=/mnt/mmdb/GeoIP2-City.mmdb VARNISHSRC=/usr/local/src/Varnish-Cache VMODDIR=/usr/lib64/varnish/vmods
+./configure --prefix=/usr --with-maxminddb=/usr --with-maxminddbfile=/mnt/mmdb/GeoLite2-City.mmdb VMODDIR=/usr/lib64/varnish/vmods PKG_CONFIG_PATH=/usr/lib/pkgconfig
 make
 make install
 ```
