@@ -2,15 +2,14 @@
 #include <signal.h>
 #include <maxminddb.h>
 
+// varnish includes
 #include "vcl.h"
 #include "vrt.h"
 #include "vqueue.h"
 #include "cache/cache.h"
-
-//#include "vrt.h"
-//#include "bin/varnishd/cache/cache.h"
-//#include "include/vct.h"
 #include "vcc_if.h"
+
+// my mod
 #include "vmod_geo.h"
 
 //**********************************************************************
@@ -23,18 +22,18 @@
 int
 init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 {
-  switch (e) {
-  case VCL_EVENT_LOAD: {
-    int mmdb_baddb = open_mmdb(&mmdb_handle);
-    if (!mmdb_baddb) {
-        priv->priv = (void *)&mmdb_handle;
-        priv->free = close_mmdb;
+    switch (e) {
+    case VCL_EVENT_LOAD: {
+        int mmdb_baddb = open_mmdb(&mmdb_handle);
+        if (!mmdb_baddb) {
+            priv->priv = (void *)&mmdb_handle;
+            priv->free = close_mmdb;
+        }
+        return mmdb_baddb;
+        break;
     }
-    return mmdb_baddb;
-    break;
-  }
-  }
-  return 0;
+    }
+    return 0;
 }
 
 // Lookup a field
