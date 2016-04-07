@@ -9,7 +9,7 @@
 #include "cache/cache.h"
 #include "vcc_if.h"
 
-// my mod
+// the mod
 #include "vmod_geo.h"
 
 //**********************************************************************
@@ -17,7 +17,6 @@
 // functions defined in geo_functions.c
 //**********************************************************************
 
-//init_function(VRT_CTX, struct vmod_priv *priv, const struct VCL_conf *conf) 
 // open the maxmind db once, during initialization.
 int
 init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
@@ -36,7 +35,7 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
     return 0;
 }
 
-// Lookup a field
+// Lookup a field in maxmind db.
 VCL_STRING
 vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **lookup_path)
 {
@@ -228,21 +227,19 @@ vmod_get_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
         }
     }
     WS_Release(ctx->ws, len);
-
     return data;
 }
 
+// return a string of the number of bytes available.
 VCL_STRING
 vmod_get_reserve_length(VRT_CTX) 
 {
-    char* r;
     char* p;
     unsigned len;
     len = WS_Reserve(ctx->ws, 0);
     p = ctx->ws->f;
-    len = snprintf(p, len, "%d", len);
-    len++;
-    printf("len is %d\n", len);
+    len = snprintf(p, len, "%d", len++);
+    p[len] = '\0';
     WS_Release(ctx->ws, len);
     return p;
 }
