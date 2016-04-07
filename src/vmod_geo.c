@@ -63,20 +63,19 @@ VCL_STRING
 vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
     }               
-    data = geo_lookup_weather(mmdb_handle, ipstr, 1);
     
-    if (data != NULL) {
-        cp = WS_Copy(ctx->ws, data, strlen(data));
-        free(data);
+    unsigned max_len = WS_Reserve(ctx->ws, 0); // get all we can
+    if (max_len > 0) {
+        data = ctx->ws->f;
+        max_len = geo_lookup_weather(mmdb_handle, ipstr, 1, data, max_len);
     }
-
-    return cp;
+    WS_Release(ctx->ws, max_len);
+    return data;
 }
 
 // Lookup up a timezone
@@ -84,20 +83,19 @@ VCL_STRING
 vmod_lookup_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
-    data = geo_lookup_timezone(mmdb_handle, ipstr, 1);
-    
-    if (data != NULL) {
-      cp = WS_Copy(ctx->ws, data, strlen(data));
-      //free(data);
     }
+    unsigned max_len = WS_Reserve(ctx->ws, 0); // get all we can
+    if (max_len > 0) {
+        data = ctx->ws->f;
+        max_len = geo_lookup_timezone(mmdb_handle, ipstr, 1, data, max_len);
+    }
+    WS_Release(ctx->ws, max_len);
 
-    return cp;
+    return data;
 }
 
 // Lookup up a location
@@ -187,16 +185,15 @@ VCL_STRING
 vmod_get_weather_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
 {
     char *data = NULL;
-    char *cp   = NULL;
-    data       = get_weather_code_from_cookie(cookiestr, cookiename);
-
-
-    if (data != NULL) {
-      cp = WS_Copy(ctx->ws, data, strlen(data));//cp = WS_Dup(ctx->ws, data);
-        free(data);
+    unsigned len = 0;
+    len = WS_Reserve(ctx->ws, 0); // get what memory we can
+    if (len > 0) {
+        data = ctx->ws->f; // point to start of free space
+        len = get_weather_code_from_cookie(cookiestr, cookiename, data, len);
     }
-    
-    return cp;
+    WS_Release(ctx->ws, len);
+
+    return data;
 }
 
 // get a cookie value by name from the cookiestr
@@ -204,14 +201,15 @@ VCL_STRING
 vmod_get_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
 {
     char *data = NULL;
-    char *cp   = NULL;
-    data = get_cookie(cookiestr, cookiename);
-
-    if (data != NULL) {
-      cp = WS_Copy(ctx->ws, data, strlen(data));//cp = WS_Dup(ctx->ws, data);
-        free(data);
+    unsigned len = 0;
+    len = WS_Reserve(ctx->ws, 0); // get what memory we can
+    if (len > 0) {
+        data = ctx->ws->f; // point to start of free space
+        len = get_cookie(cookiestr, cookiename, data, len);
     }
-    return cp;
+    WS_Release(ctx->ws, len);
+
+    return data;
 }
 
 VCL_STRING
