@@ -100,40 +100,41 @@ int main(int argc, char **argv) {
 		}
 		
 	}
-	
-	char *ipaddr;
-	ipaddr = calloc( 255, sizeof(char) );
+
+        char work[255];
+        char *ipaddr;
+        ipaddr = work;
+
 	do {
+            ipaddr = fgets(&ipaddr, 255, f);
+            if (ipaddr == NULL) 
+                break;
 
-		ipaddr = fgets(ipaddr,255,f);
-		if (ipaddr == NULL) 
-			break;
-
-		// consume the new line
-		char *c = strrchr(ipaddr,'\n');
-		if (c != NULL) {
-			*c = '\0';
-		}
-		c = geo_lookup_weather(mmdb_handle, ipaddr, 0);
-		int index, end, count;
-
-		count = 0;
-		end   = strlen(c);
-		// if there's more than 2 - in the result, let's dump it to file 
-		// for closer examination.
-		for (index = 0; index < end; ++index) {
-			if (c[index] == '-')
-				count+=1;
-			if (count > 2) {
-				dump_failed_lookup(mmdb_handle, ipaddr, debugfile);
-				break;
-			}
-		}
-		if (output == NULL) 
-			fprintf(stdout, "%s,%s\n", ipaddr, c);
-		else
-			fprintf(output, "%s,%s\n", ipaddr, c);
-
+            // consume the new line
+            char *c = strrchr(ipaddr,'\n');
+            if (c != NULL) {
+                *c = '\0';
+            }
+            geo_lookup_weather(mmdb_handle, ipaddr, 0, c, 255);
+            int index, end, count;
+            
+            count = 0;
+            end   = strlen(c);
+            // if there's more than 2 - in the result, let's dump it to file 
+            // for closer examination.
+            for (index = 0; index < end; ++index) {
+                if (c[index] == '-')
+                    count+=1;
+                if (count > 2) {
+                    dump_failed_lookup(mmdb_handle, ipaddr, debugfile);
+                    break;
+                }
+            }
+            if (output == NULL) 
+                fprintf(stdout, "%s,%s\n", ipaddr, c);
+            else
+                fprintf(output, "%s,%s\n", ipaddr, c);
+            
 	} while (ipaddr != NULL);
 	free(ipaddr);
 	close_mmdb(mmdb_handle);

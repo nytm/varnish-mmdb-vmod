@@ -200,6 +200,7 @@ void test_GetEmptyCookieAb()
     char actual[max_len];
     actual[0] = '\0';
     max_len = get_cookie(cookiestra, cookiename, actual, max_len);
+    
     TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
 

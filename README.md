@@ -1,32 +1,74 @@
-#Varnish vmod for GeoMaxMind DB
-https://www.maxmind.com/en/home
+Varnish MaxMind GeoIP vmod
+--------------------------
 
 **NOTE**
 This is for Varnish 3
 
-I forked this vmod to add new features that would allow me to work with our weather API provider, Accuweather.
+This vmod provides the ability to lookup location information based on IP address. The GeoIP database is a mmap'd red black tree implementation that's read-only. The code opens the database when the vmod is initialized and shutdown when the thread is terminated, leaving the database open for the life of the thread. The most expensive operation is opening the MaxMind database.
+
+The vmod uses the MaxMind City database. 
+
+## Usage
+
+```
+import geo
+   // ....
+   sub vcl_recv {
+     set req.http.X-Country     = geo.country("170.149.100.10")
+     set req.http.X-CountryCode = geo.country_code("170.149.100.10")
+     set req.http.X-Region      = geo.region("170.149.100.10")
+     set req.http.X-MetroCode   = geo.metro_code("170.149.100.10")
+     set req.http.X-City        = geo.city("170.149.100.10")
+     set req.http.X-Timezone    = geo.timezone("170.149.100.10")
+     set req.http.X-Location    = geo.location("170.149.100.10")
+
+     //# nytimes specific stuff
+     set req.http.Weather-Code   = geo.weather_code("170.149.100.10")
+     set req.http.Weather-Cookie = geo.get_weather_cookie(req.http.Cookie, "NYT_W2")
+     set req.http.Cookie-Value   = geo.get_cookie(req.http.Cookie, "NYT_W2")
+
+    }
+    // ....
+}
+```
+The location call generates json e.g. geo.location("199.254.0.98") would return
+
+``{"city":"Beverly Hills","state":"CA","country":"US"}"``
+
+## Testing
+There are unit tests and varnishtest scripts. The unit tests are in the tests folder. Edit tests/tests.c and rerun make && make test
+The unit tests are done with unity https://mark-vandervoord-yxrv.squarespace.com/unity
+Varnishtest scripts are in src/tests. To run the tests:
+
+```
+make test
+```
+
 
 ## Installation
-This module requires the following:
 
-Varnish cache from https://github.com/varnish/Varnish-Cache
+The vmod depends on having the following installed:
 
-libmaxminddb from https://github.com/maxmind/libmaxminddb
+* Varnish - https://github.com/varnish/Varnish-Cache
+* libmaxminddb - https://github.com/maxmind/libmaxminddb
 
-http://maxmind.github.io/MaxMind-DB/
+http://maxmind.github.io/MaxMind-DB provides an indepth look at the MaxMind GeoIP database.
 
-Get a copy of the free city database from here: https://dev.maxmind.com/geoip/geoip2/geolite2/
+You can get a copy of the city database from here: https://dev.maxmind.com/geoip/geoip2/geolite2/
+
 ### Step 1 - get the source and build a copy of Varnish
 
 
 ```
-cd /mnt/src
+cd /usr/local/src
 git clone https://github.com/varnish/Varnish-Cache.git
 cd Varnish-Cache
-git branch 4.1 -t origin/4.1
-git checkout 4.1
+git branch 3.0 -t origin/3.0
+git checkout 3.0
+# make sure i'm matching release versions - 3.0.5 in my case.
+git checkout 1a89b1f75895bbf874e83cfc6f6123737a3fd76f
 ./autogen.sh
-./configure --prefix=/usr
+./configure --prefix=/usr/local
 make
 sudo make install
 ```
@@ -49,17 +91,18 @@ git submodule update
 ./bootstrap
 ./configure --prefix=/usr/local
 make 
-make install
+sudo make install
 cd ..
 ```
+
 ### Step 3 - build the mddb vmod
 ```
 git clone git@github.com:nytm/varnish-mmdb-vmod.git
 cd varnish-mmdb-vmod
 ./autogen.sh
-./configure --prefix=/usr --with-maxminddb=/usr --with-maxminddbfile=/mnt/mmdb/GeoLite2-City.mmdb VMODDIR=/usr/lib64/varnish/vmods PKG_CONFIG_PATH=/usr/lib/pkgconfig
+./configure --prefix=/usr --with-maxminddbfile=/mnt/mmdb/GeoIP2-City.mmdb VARNISHSRC=/usr/local/src/Varnish-Cache VMODDIR=/usr/lib64/varnish/vmods
 make
-make install
+sudo make install
 ```
 
 **NOTE** I added support for a flag in autoconf:  **--with-maxminddbfile** so that you can decide, when you build the module, where you're data file will live. If you don't specify a value the default will be used **/mnt/mmdb/GeoIP2-City.mmdb** See src/vmod_geo.h
@@ -73,52 +116,3 @@ I modified the module to open the maxmind db file once, on Init. If you open the
 This will work with the free data or the licensed data. 
 
 
-## vmod usage example
-This vmod gives you the following functions:
-```
-geo.country("170.149.100.10")
-geo.country_code("170.149.100.10")
-geo.region("170.149.100.10")
-geo.metro_code("170.149.100.10")
-geo.city("170.149.100.10")
-
-# DU specific stuff
-geo.weather_code("170.149.100.10")
-geo.get_weather_cookie(req.http.Cookie, "NYT_W2")
-
-# Generic get cookie value from http cookie header
-geo.get_cookie(req.http.Cookie, "NYT_W2")
-
-
-```
-
-Here is some very basic usage:
-
-```
-import geo;
-import std;
-
-sub vcl_recv{
- set req.http.X-Forwarded-For = client.ip;
- std.syslog(180, geo.city(req.http.X-Forwarded-For));
- std.syslog(180, geo.country(req.http.X-Forwarded-For));
-}
-
-```
-Here is how I use it:
-```
-import std;
-import geo;
-....
-set req.http.X-Weather = geo.get_weather_cookie(req.http.Cookie, "NYT_W2");
-set req.http.X-Weather = geo.weather_code(req.http.IP);
-set req.http.X-Weather = regsuball(req.http.X-Weather, " ", "%20");
-```
-
-## Testing
-You can add tests in src/tests. Use src/tests/test01.vtc as an example or check out https://github.com/varnish/libvmod-example to see how their done. **NOTE** you will need to 
-
-```
-cd src
-make tests/*
-```

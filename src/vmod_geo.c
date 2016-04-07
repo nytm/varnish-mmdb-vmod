@@ -53,6 +53,10 @@ vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **l
     if (len > 0) {
         data = ctx->ws->f; // start of free space
         len = geo_lookup(mmdb_handle, ipstr, lookup_path, data, len);
+        if (len == 0) {
+            // set data back to null from ctx->ws->f
+            data = NULL;
+        }
     }
     WS_Release(ctx->ws, len); // house keeping
     return data;
@@ -69,12 +73,16 @@ vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         return NULL;
     }               
     
-    unsigned max_len = WS_Reserve(ctx->ws, 0); // get all we can
-    if (max_len > 0) {
+    unsigned len = WS_Reserve(ctx->ws, 0); // get all we can
+    if (len > 0) {
         data = ctx->ws->f;
-        max_len = geo_lookup_weather(mmdb_handle, ipstr, 1, data, max_len);
+        len = geo_lookup_weather(mmdb_handle, ipstr, 1, data, len);
+        if (len == 0) {
+            // set data back to null from ctx->ws->f
+            data = NULL;
+        }
     }
-    WS_Release(ctx->ws, max_len);
+    WS_Release(ctx->ws, len);
     return data;
 }
 
@@ -88,13 +96,16 @@ vmod_lookup_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
     }
-    unsigned max_len = WS_Reserve(ctx->ws, 0); // get all we can
-    if (max_len > 0) {
+    unsigned len = WS_Reserve(ctx->ws, 0); // get all we can
+    if (len > 0) {
         data = ctx->ws->f;
-        max_len = geo_lookup_timezone(mmdb_handle, ipstr, 1, data, max_len);
+        len = geo_lookup_timezone(mmdb_handle, ipstr, 1, data, len);
+        if (len == 0) {
+            // set data back to null from ctx->ws->f
+            data = NULL;
+        }
     }
-    WS_Release(ctx->ws, max_len);
-
+    WS_Release(ctx->ws, len);
     return data;
 }
 
@@ -113,9 +124,12 @@ vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
     if (len > 0) { 
         data = ctx->ws->f; // start of free space
         len = geo_lookup_location(mmdb_handle, ipstr, 1, data, len);
+        if (len == 0) {
+            // set data back to null from ctx->ws->f
+            data = NULL;
+        }
     }
-    WS_Release(ctx->ws, len); // house keeping
-    
+    WS_Release(ctx->ws, len); // house keeping    
     return data;
 }
 
@@ -190,9 +204,12 @@ vmod_get_weather_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
     if (len > 0) {
         data = ctx->ws->f; // point to start of free space
         len = get_weather_code_from_cookie(cookiestr, cookiename, data, len);
+        if (len == 0) {
+            // set data back to null from ctx->ws->f
+            data = NULL;
+        }
     }
     WS_Release(ctx->ws, len);
-
     return data;
 }
 
@@ -206,6 +223,10 @@ vmod_get_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
     if (len > 0) {
         data = ctx->ws->f; // point to start of free space
         len = get_cookie(cookiestr, cookiename, data, len);
+        if (len == 0) {
+            // set data back to null from ctx->ws->f
+            data = NULL;
+        }
     }
     WS_Release(ctx->ws, len);
 
@@ -215,14 +236,14 @@ vmod_get_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
 VCL_STRING
 vmod_get_reserve_length(VRT_CTX) 
 {
-  char* r;
-  char* p;
-  unsigned len;
-  len = WS_Reserve(ctx->ws, 0);
-  p = ctx->ws->f;
-  len = snprintf(p, len, "%d", len);
-  len++;
-  printf("len is %d\n", len);
-  WS_Release(ctx->ws, len);
-  return p;
+    char* r;
+    char* p;
+    unsigned len;
+    len = WS_Reserve(ctx->ws, 0);
+    p = ctx->ws->f;
+    len = snprintf(p, len, "%d", len);
+    len++;
+    printf("len is %d\n", len);
+    WS_Release(ctx->ws, len);
+    return p;
 }

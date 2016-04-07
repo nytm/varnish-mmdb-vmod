@@ -37,16 +37,16 @@ void
 dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *file_to_write_to);
 
 // lookup an NYT weather code from ip address
-char *
-geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+int
+geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len);
 
 // lookup a location from ip address
 int
 geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len);
 
 // lookup a timezone from ip address
-char *
-geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+int
+geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len);
 
 // the cookie header can be too big for regusub or regusuball so we need
 // a function to pull a cookie value from the Cookie header. Here is an
@@ -56,12 +56,12 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 // it can be anywere in the cookie string, front, middle blank or not
 // even existant. because regsub and regsuball bail when the cookie
 // string is larger than 5655, I created this function.
-char *
-get_weather_code_from_cookie(const char *cookiestr, const char *cookiename);
+int
+get_weather_code_from_cookie(const char *cookiestr, const char *cookiename, char *data, unsigned max_len);
 
 // get the value of a cookie by name. 
-char *
-get_cookie(const char *cookiestr, const char *cookiename);
+int
+get_cookie(const char *cookiestr, const char *cookiename, char *data, unsigned max_len);
 
 // copy and add null
 int

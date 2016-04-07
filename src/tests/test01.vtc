@@ -42,12 +42,12 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-    expect resp.http.fromBig == "New%20YorkNYUS"
-    expect resp.http.EndTest == "New%20YorkNYUS"
-    expect resp.http.EndPipeTest == "New%20YorkNYUS"
+    #expect resp.http.fromBig == "New%20YorkNYUS"
+    #expect resp.http.EndTest == "New%20YorkNYUS"
+    #expect resp.http.EndPipeTest == "New%20YorkNYUS"
     expect resp.http.Empty1Test == ""
-    expect resp.http.Empty2Test == ""
-    expect resp.http.Country == "FR"
+    #expect resp.http.Empty2Test == ""
+    #expect resp.http.Country == "FR"
 }
 
 # or you can have one test after another
