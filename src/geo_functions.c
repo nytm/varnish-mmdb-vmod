@@ -11,11 +11,6 @@
 #define DEBUG 1
 #endif
 
-//**********************************************************************
-// NOTICE!! All functions that return pointers use calloc so you must
-// free the return values.
-//**********************************************************************
-
 static char*  MMDB_CITY_PATH = MAX_CITY_DB;
 static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
 static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
@@ -38,7 +33,7 @@ open_mmdb(MMDB_s *mmdb_handle)
 {
     int mmdb_baddb = MMDB_open(MMDB_CITY_PATH, MMDB_MODE_MMAP, mmdb_handle);
     if (mmdb_baddb != MMDB_SUCCESS) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr, "[ERROR] open_mmdb: Can't open %s - %s\n",
             MMDB_CITY_PATH, MMDB_strerror(mmdb_baddb));
         if (MMDB_IO_ERROR == mmdb_baddb) {
@@ -46,7 +41,7 @@ open_mmdb(MMDB_s *mmdb_handle)
                 "[ERROR] open_mmdb: IO error: %s\n",
                 strerror(mmdb_baddb));
         }
-#endif
+        #endif
         mmdb_handle = NULL;
         return 1;
     }
@@ -69,20 +64,20 @@ geo_lookup(MMDB_s *const mmdb_handle,
         MMDB_lookup_string(mmdb_handle, ipstr, &gai_error, &mmdb_error);
 
     if (0 != gai_error) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[INFO] Error from getaddrinfo for %s - %s\n\n",
             ipstr, gai_strerror(gai_error));
-#endif
+        #endif
         return 0;
     }
 
     if (MMDB_SUCCESS != mmdb_error) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[ERROR] Got an error from libmaxminddb: %s\n\n",
             MMDB_strerror(mmdb_error));
-#endif
+        #endif
         return 0;
     }
 
@@ -94,13 +89,13 @@ geo_lookup(MMDB_s *const mmdb_handle,
         int status = MMDB_aget_value(&result.entry, &entry_data, lookup_path);
 
         if (MMDB_SUCCESS != status) {
-#if DEBUG
+            #if DEBUG
             fprintf(
                 stderr,
                     "[WARN] Got an error looking up the entry data. Make sure \
  the lookup_path is correct. %s\n",
                     MMDB_strerror(status));
-#endif
+            #endif
             exit_code = 4;
             return 0;
         }
@@ -118,19 +113,20 @@ geo_lookup(MMDB_s *const mmdb_handle,
             case MMDB_DATA_TYPE_UINT16: {
                 uint16_t num = UINT16_MAX;
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
-		if (len+1 < max_len) {
-		  snprintf(data, len++, "%u", entry_data.uint16);
+                len++;
+		if (len < max_len) {
+		  snprintf(data, len, "%u", entry_data.uint16);
                   data[len] = '\0';
 		}
                 return len;
             }
             default:
-#if DEBUG
+                #if DEBUG
                 fprintf(
                     stderr,
                         "[WARN] No handler for entry data type (%d) was found\n",
                         entry_data.type);
-#endif
+                #endif
                 exit_code = 6;
                 return 0;
             }
@@ -138,12 +134,12 @@ geo_lookup(MMDB_s *const mmdb_handle,
             return 0;
         }
     } else {
-#if DEBUG
+        #if DEBUG
         fprintf(
             stderr,
                 "[INFO] No entry for this IP address (%s) was found\n",
                 ipstr);
-#endif
+        #endif
         exit_code = 5;
         return 0;
     }
@@ -162,12 +158,12 @@ get_value(MMDB_lookup_result_s *result, const char **path)
     MMDB_entry_data_s entry_data;
     int status  = MMDB_aget_value( &(*result).entry, &entry_data, path);
     if (MMDB_SUCCESS != status) {
-#if DEBUG
+        #if DEBUG
         fprintf(
             stderr,
                 "[WARN] get_value got an error looking up the entry data. Make sure you use the correct path - %s\n",
                 MMDB_strerror(status));
-#endif
+        #endif
         return NULL;
     }
     char *value = NULL;
@@ -196,17 +192,19 @@ get_value(MMDB_lookup_result_s *result, const char **path)
             snprintf(value, 1, "%d", entry_data.boolean);
             break;
         default:
-#if DEBUG
+            #if DEBUG
             fprintf(
                 stderr,
                     "[WARN] get_value: No handler for entry data type (%d) was found. \n",
                     entry_data.type);
-#endif
+            #endif
             break;
         }
     }
     return value;
 }
+
+// Given a valid result and some entry data, lookup a value and write to write_to, no more than max_len chars
 int
 set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsigned max_len)
 {
@@ -229,7 +227,7 @@ set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsig
             int len = (entry_data.data_size+1);
             if (len < max_len) {
                 snprintf(write_to, len, "%s", entry_data.utf8_string); // +1 to write the \0
-                wrote = entry_data.data_size;
+                wrote = len;
             }
             break;
         }
@@ -238,7 +236,7 @@ set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsig
             int len      = (int)((ceil(log10(num)))*sizeof(char));
             len++;
             if (len < max_len) {
-                snprintf(write_to, len--, "%u", entry_data.uint16);
+                snprintf(write_to, len, "%u", entry_data.uint16);
                 wrote = len;
             }
             break;
@@ -248,7 +246,7 @@ set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsig
             int len    = (int)((ceil(log10(num)))*sizeof(char));
             len++;
             if (len < max_len) {
-                snprintf(write_to, len--, "%f", entry_data.double_value);
+                snprintf(write_to, len, "%f", entry_data.double_value);
                 wrote = len;
             }
             break;
@@ -257,7 +255,7 @@ set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsig
             // i'm assuming true == 1 and false == 0
             if (2 < max_len) {
                 snprintf(write_to, 2, "%d", entry_data.boolean);
-                wrote = 1;
+                wrote = 2;
             }
             break;
         default:
@@ -274,7 +272,11 @@ set_value(MMDB_lookup_result_s *result, const char **path, char *write_to, unsig
 }
 
 int
-geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len)
+geo_lookup_location(MMDB_s *const mmdb_handle,
+                    const char *ipstr,
+                    int use_default,
+                    char *data,
+                    unsigned max_len)
 {
     if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
@@ -287,11 +289,11 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
     if (ip_lookup_failed) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[WARN] vmod_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
             ipstr, gai_strerror(ip_lookup_failed));
-#endif
+        #endif
         // we don't want null, if we're not using default
         if (use_default) {
             return copy(data, DEFAULT_LOCATION, max_len);
@@ -301,13 +303,13 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
     }
 
     if (db_status != MMDB_SUCCESS) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[ERROR] vmod_lookup_location: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             MMDB_CITY_PATH,
             MMDB_strerror(db_status));
-#endif
+        #endif
         if (use_default) {
             return copy(data, DEFAULT_LOCATION, max_len);
         } else {
@@ -341,10 +343,10 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         if (country == NULL || city == NULL || state == NULL) {
 
             if (use_default) {
-                data = strdup(DEFAULT_LOCATION);
+                return copy(data, DEFAULT_LOCATION, max_len);
             } else {
                 if (country == NULL) {
-                    country[0] = '\n';
+                    country[0] = '\0';
                 }
                 if (city == NULL) {
                     city[0] = '\0';
@@ -356,9 +358,9 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 const char* fmt = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
                 len += (sizeof(char) * strlen(fmt));
                 len -= (sizeof(char) * 6);
-                if (len+1 < max_len) {
+                len++;
+                if (len < max_len) {
                     snprintf(data, len, fmt, city, state, country);
-                    data[len] = '\0';
                     return len;
                 } else {
                     if (use_default) {
@@ -388,95 +390,91 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         }
 
     } else {
-#if DEBUG
+        #if DEBUG
         fprintf(
             stderr,
                 "[INFO] No entry for this IP address (%s) was found\n",
                 ipstr);
-#endif
+        #endif
         return copy(data, DEFAULT_LOCATION, max_len);
     }
-
 }
 
-char *
-geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+int
+geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default, char *data, unsigned max_len)
 {
     if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_TIMEZONE);
+        return copy(data, DEFAULT_TIMEZONE, max_len);
     }
 
-    char *data;
     // Lookup IP in the DB
     int ip_lookup_failed, db_status;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
     if (ip_lookup_failed) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[WARN] vmod_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
             ipstr, gai_strerror(ip_lookup_failed));
-#endif
+        #endif
         // we don't want null, if we're not using default
         if (use_default) {
-            return strdup(DEFAULT_TIMEZONE);
+            return copy(data, DEFAULT_TIMEZONE, max_len);
         } else {
-            return strdup("--");
+            return copy(data, "--", max_len);
         }
     }
 
     if (db_status != MMDB_SUCCESS) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[ERROR] vmod_lookup_location: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             MMDB_CITY_PATH,
             MMDB_strerror(db_status));
-#endif
+        #endif
         if (use_default) {
-            return strdup(DEFAULT_TIMEZONE);
+            return copy(data, DEFAULT_TIMEZONE, max_len);
         } else {
-            return strdup("--");
+            return copy(data, "--", max_len);
         }
     }
 
     // these varaibles will hold our results
-    char *timezone = NULL;
+    int MAX = 255;
+    char timezone[MAX];
 
     // these are used to extract values from the mmdb
     const char *timezone_lookup[] = {"location", "time_zone", NULL};
     
     if (result.found_entry) {
-        timezone = get_value(&result, timezone_lookup);
-
         // we should always return new york
-        if (timezone == NULL) {
-            data = strdup(DEFAULT_TIMEZONE);
+        if (set_value(&result, timezone_lookup, timezone, MAX) == 0) {
+            return copy(data, DEFAULT_TIMEZONE, max_len);
         } else {
-            size_t chars = (sizeof(char)* ( strlen(timezone)) ) + 1;
+            size_t len = (sizeof(char)* ( strlen(timezone)) ) + 1;
             const char *txt = "{\"timezone\":\"%s\"}";
-            chars += (sizeof(char) * (strlen(txt)-2));
-            data = malloc(chars);
-            sprintf(data, txt, timezone);
+            len += (sizeof(char) * (strlen(txt)-2));
+            len++; // add null for snprintf
+            if (len < max_len) {
+                snprintf(data, len, txt, timezone);
+                return len;
+            } else {
+                return copy(data, DEFAULT_TIMEZONE, max_len);
+            }
         }
-
     } else {
-#if DEBUG
+        #if DEBUG
         fprintf(
             stderr,
                 "[INFO] No entry for this IP address (%s) was found\n",
                 ipstr);
-#endif
-        data = strdup(DEFAULT_TIMEZONE);
-    }
-    
-    if (timezone != NULL) {
-        free(timezone);
+        #endif
+        return copy(data, DEFAULT_TIMEZONE, max_len);
     }
 
-    return data;
 }
 
 // This function builds up a code we need to lookup weather
@@ -486,53 +484,57 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 // if country code == US, get region e.g. CA
 // And then return "Beverly HillsCAUS" if a US address or
 //                    "Paris--FR" if non US
-char *
-geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+int
+geo_lookup_weather(MMDB_s *const mmdb_handle,
+                   const char *ipstr,
+                   int use_default,
+                   char *data,
+                   unsigned max_len)
 {
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_WEATHER_CODE);
+        return copy(data, DEFAULT_WEATHER_CODE, max_len);
     }
 
-    char *data;
     // Lookup IP in the DB
     int ip_lookup_failed, db_status;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
     if (ip_lookup_failed) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[WARN] vmod_lookup_weathercode: Error from getaddrinfo for IP: %s Error Message: %s\n",
             ipstr, gai_strerror(ip_lookup_failed));
-#endif
+        #endif
         // we don't want null, if we're not using default
         if (use_default) {
-            return strdup(DEFAULT_WEATHER_CODE);
+            return copy(data, DEFAULT_WEATHER_CODE, max_len);
         } else {
-            return strdup("--");
+            return copy(data, "--", max_len);
         }
     }
 
     if (db_status != MMDB_SUCCESS) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[ERROR] vmod_lookup_weathercode: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             MMDB_CITY_PATH,
             MMDB_strerror(db_status));
-#endif
+        #endif
         if (use_default) {
-            return strdup(DEFAULT_WEATHER_CODE);
+            return copy(data, DEFAULT_WEATHER_CODE, max_len);
         } else {
-            return strdup("--");
+            return copy(data, "--", max_len);
         }
     }
 
     // these varaibles will hold our results
-    char *country = NULL;
-    char *city    = NULL;
-    char *state   = NULL;
+    const int MAX = 255;
+    char country[MAX];
+    char city[MAX];
+    char state[MAX];
 
     // these are used to extract values from the mmdb
     const char *country_lookup[] = {"country", "iso_code", NULL};
@@ -540,63 +542,59 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
     const char *state_lookup[]   = {"subdivisions", "0", "iso_code", NULL};
 
     if (result.found_entry) {
-        country = get_value(&result, country_lookup);
-        city    = get_value(&result, city_lookup);
+        set_value(&result, city_lookup, city, MAX);
+        set_value(&result, country_lookup, country, MAX);
 
         if (country != NULL && strcmp(country,"US") == 0) {
-            state = get_value(&result, state_lookup);
+            set_value(&result, state_lookup, state, MAX);
         } else {
-            state = strdup("--");
+            copy(state, "--", MAX);
         }
 
         // we should always return new york
         if (country == NULL || city == NULL || state == NULL) {
 
             if (use_default) {
-                data = strdup(DEFAULT_WEATHER_CODE);
+                return copy(data, DEFAULT_WEATHER_CODE, max_len);
             } else {
                 if (country == NULL) {
-                    country = strdup("--");
+                    copy(country, "--", MAX);
                 }
                 if (city == NULL) {
-                    city = strdup("--");
+                    copy(city, "--", MAX);
                 }
                 if (state == NULL) {
-                    state = strdup("--");
+                    copy(state, "--", MAX);
                 }
-                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) ) + 1;
-                data = malloc(chars);
-                sprintf(data, "%s%s%s", city, state, country);
+                size_t len = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) ) + 1;
+                len++;
+                if (len < max_len) {
+                    snprintf(data, len, "%s%s%s", city, state, country);
+                    return len;
+                } else {
+                    return copy(data, DEFAULT_WEATHER_CODE, max_len);
+                }
             }
         } else {
-            size_t chars = (sizeof(char)* ( strlen(country) + strlen(city) + strlen(state)) ) + 1;
-            data = malloc(chars);
-            sprintf(data, "%s%s%s", city, state, country);
+            size_t len = (sizeof(char)* ( strlen(country) + strlen(city) + strlen(state)) ) + 1;
+            len++;
+            if (len < max_len) {
+                snprintf(data, len, "%s%s%s", city, state, country);
+                return len;
+            } else {
+                return copy(data, DEFAULT_WEATHER_CODE, max_len);
+            }
         }
 
     } else {
-#if DEBUG
+        #if DEBUG
         fprintf(
             stderr,
                 "[INFO] No entry for this IP address (%s) was found\n",
                 ipstr);
-#endif
-        data = strdup(DEFAULT_WEATHER_CODE);
+        #endif
+        return copy(data, DEFAULT_WEATHER_CODE, max_len);
     }
-    
-    if (country != NULL) {
-        free(country);
-    }
-
-    if (city != NULL) {
-        free(city);
-    }
-
-    if (state != NULL) {
-        free(state);
-    }
-
-    return data;
 }
 
 
@@ -616,31 +614,31 @@ dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *out
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
     if (ip_lookup_failed) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[WARN] vmod_lookup_weathercode: Error from getaddrinfo for IP: %s Error Message: %s\n",
             ipstr, gai_strerror(ip_lookup_failed));
-#endif
+        #endif
         return;
     }
 
     if (db_status != MMDB_SUCCESS) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr,
             "[ERROR] vmod_lookup_weathercode: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             MMDB_CITY_PATH,
             MMDB_strerror(db_status));
-#endif
+        #endif
         return;
     }
 
     FILE *f = fopen(outputfile, "a+");
 
     if (f == NULL) {
-#if DEBUG
+        #if DEBUG
         fprintf(stderr, "[ERROR] Unable to open the output file %s\n", outputfile);
-#endif
+        #endif
         return;
     }
 
@@ -649,12 +647,12 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         &entry_data_list);
 
     if (MMDB_SUCCESS != status) {
-#ifndef DEBUG
+        #ifndef DEBUG
         fprintf(
             stderr,
                 "Got an error looking up the entry data - %s\n",
                 MMDB_strerror(status));
-#endif
+        #endif
         return;
     }
 
@@ -684,8 +682,8 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             if (reg_country != NULL) {
                 fprintf(f, "%s,%s\n", ipstr, reg_country);
             } else {
-                size_t chars = (sizeof(char) * strlen(ipstr)+50);
-                stuff = calloc( chars, sizeof(char) );
+                size_t len = (sizeof(char) * strlen(ipstr)+50);
+                stuff = calloc( len, sizeof(char) );
                 fprintf(f, "{\"%s\":", ipstr);
                 MMDB_dump_entry_data_list(f, entry_data_list, 2);
                 fprintf(f, "},");
@@ -697,22 +695,23 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 }
 
 // we only want the first part of the cookie, up to the |
-char *
-get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
+int
+get_weather_code_from_cookie(const char *cookiestr, const char *cookiename, char *data, unsigned max_len)
 {
-    char* found = get_cookie(cookiestr, cookiename);
-    if (found != NULL) {
-        char* sep = strstr(found, "|");
+    max_len = get_cookie(cookiestr, cookiename, data, max_len);
+    if (max_len > 0) {
+        char* sep = strstr(data, "|");
         if (sep != NULL) {
-            *sep = '\0';
+            *sep = '\0'; // swap the | for a nul, to terminate
+            max_len = (sep - data); // reduces the amount of memory we need
         }
     }
-    return found;
+    return max_len;
 }
 
 
-char *
-get_cookie(const char *cookiestr, const char *cookiename)
+int
+get_cookie(const char *cookiestr, const char *cookiename, char *data, unsigned max_len)
 {
     const char *found = cookiestr;
 
@@ -720,7 +719,7 @@ get_cookie(const char *cookiestr, const char *cookiename)
         found = strstr(found, cookiename);
 
         if (found == NULL) {
-            return NULL;
+            return 0;
         }
 
         found += strlen(cookiename);
@@ -739,14 +738,14 @@ get_cookie(const char *cookiestr, const char *cookiename)
 
     // should be at equal at this point
     if (*found != '=') {
-        return NULL;
+        return 0;
     }
     ++found;
 
     // we should not have any white space after the = symbol
     // and if the next char is a ; there is no value for the cookie
     if (*found == '\0' || *found == ';' || *found == ' ') {
-        return NULL;
+        return 0;
     }
 
     // find the end of the cookie. cookies are name=value;
@@ -755,14 +754,15 @@ get_cookie(const char *cookiestr, const char *cookiename)
         ++end;
     }
 
-    int len      = end - found;
-    char* result = NULL;
-    result = (char*)calloc(sizeof(char), len+1);
-    if (!result) {
-        return NULL;
+    int len      = (end - found);
+    len++;
+    if (len < max_len) {
+        snprintf(data, len, "%s", found);
+        data[len] = '\0';
+        return len;
     }
-    strncpy(result, found, len);
-    return result;
+    
+    return 0;
 }
 
 int
@@ -774,6 +774,8 @@ copy(char *dest, const char *src, unsigned max_len)
         strncpy(dest, src, len);
         dest[len] = '\0';
         return len;
+    } else {
+        dest = NULL;
     }
     return 0;
 }
