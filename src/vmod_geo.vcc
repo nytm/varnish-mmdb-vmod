@@ -1,4 +1,4 @@
-$Module geo 3 maxmind geopip module
+$Module geo 3 maxmind geoip module
 $Event init_function
 $Function STRING city(PRIV_VCL, STRING)
 $Function STRING country(PRIV_VCL, STRING)
