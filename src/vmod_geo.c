@@ -27,6 +27,18 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
         return mmdb_baddb;
         break;
     }
+    case VCL_EVENT_WARM: {
+        break;
+    }
+    case VCL_EVENT_USE: {
+        break;
+    }
+    case VCL_EVENT_COLD: {
+        break;
+    }
+    case VCL_EVENT_DISCARD: {
+        break;
+    }
     }
     return 0;
 }
