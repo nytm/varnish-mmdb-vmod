@@ -1,5 +1,5 @@
 AM_CFLAGS = -Werror -D_GNU_SOURCE -DMAX_CITY_DB=\"$(MAX_CITY_DB)\"
-AM_CPPFLAGS = -I/usr/include
+AM_CPPFLAGS = -I/usr/include/varnish
 
 vmoddir = $(VMODDIR)
 vmod_LTLIBRARIES = libvmod_geo.la
