@@ -5,6 +5,8 @@
 #include <float.h>
 #include "vmod_geo.h"
 
+static MMDB_s mmdb_handle;
+
 MMDB_s *
 get_handle(void) {
     return &mmdb_handle;
