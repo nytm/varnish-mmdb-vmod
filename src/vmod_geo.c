@@ -8,6 +8,7 @@
 #include "vcc_if.h"
 #include "vmod_geo.h"
 
+static MMDB_s mmdb_handle;
 //**********************************************************************
 // This has all of our vmod function definitions. This calls the 
 // functions defined in geo_functions.c
