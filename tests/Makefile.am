@@ -6,6 +6,7 @@ tests.c: .FORCE
 
 .FORCE:
 
+test_Runner.o:
 
 bin_PROGRAMS = testrunner test_ips
 testrunner_LDFLAGS = -lmaxminddb
