@@ -9,7 +9,7 @@ The vmod uses the MaxMind City database.
 
 ```
 import geo
-   // ....
+// ....
    sub vcl_recv {
      set req.http.X-Country     = geo.country("170.149.100.10")
      set req.http.X-CountryCode = geo.country_code("170.149.100.10")
@@ -25,7 +25,7 @@ import geo
      set req.http.Cookie-Value   = geo.get_cookie(req.http.Cookie, "NYT_W2")
 
     }
-    // ....
+// ....
 }
 ```
 The location call generates json e.g. geo.location("199.254.0.98") would return
