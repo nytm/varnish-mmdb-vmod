@@ -57,6 +57,7 @@ git log --max-count=1 --pretty=fuller > buildinfo/log.txt
 fi
 ./autogen.sh
 %configure VMODDIR=%{_libdir}/varnish/vmods --with-maxminddbfile=/mnt/mmdb/GeoIP2-City.mmdb
+make -C tests tests.c
 make clean
 make %{?_smp_mflags}
 
