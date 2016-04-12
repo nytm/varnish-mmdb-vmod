@@ -1,6 +1,7 @@
 %define checkoutName %{name}-%{version}-%{_build_arch}-%{suffix: %{dist}}
 %define varnishSrc https://github.com/varnish/Varnish-Cache.git
 %define varnishDir VarnishCache-%{_build_arch}
+%{!?_build_number: %define _build_number 1}
 %{!?source: %define source https://github.com/nytm/varnish-mmdb-vmod.git}
 
 Name:		libvmod-maxmind-geoip
