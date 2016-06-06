@@ -4,7 +4,7 @@
 #include <maxminddb.h>
 #include <float.h>
 #include "vmod_geo.h"
-
+static MMDB_s mmdb_handle;
 MMDB_s *
 get_handle(void) {
     return &mmdb_handle;
@@ -24,6 +24,14 @@ void test_OpenMMDB(void)
 {
     int mmdb_baddb = open_mmdb(get_handle());
     TEST_ASSERT_EQUAL_INT(0,mmdb_baddb);
+}
+
+void test_Sweden() 
+{
+  char *ip = "188.178.203.190";
+  char *expected = "Copenhagen--DK";
+  char *value = geo_lookup_weather(get_handle(), ip, 1);
+  TEST_ASSERT_EQUAL_STRING(expected,value);
 }
 
 void test_BadIP(void)

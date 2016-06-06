@@ -7,14 +7,15 @@
 #include "vcc_if.h"
 #include "vmod_geo.h"
 
+static MMDB_s mmdb_handle;
 //**********************************************************************
-// This has all of our vmod function definitions. This calls the 
+// This has all of our vmod function definitions. This calls the
 // functions defined in geo_functions.c
 //**********************************************************************
 
 // open the maxmind db once, during initialization.
 int
-init_function(struct vmod_priv *priv, const struct VCL_conf *conf) 
+init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
     int mmdb_baddb = open_mmdb(&mmdb_handle);
     if (!mmdb_baddb) {
@@ -42,7 +43,7 @@ vmod_lookup(struct sess *sp, struct vmod_priv *global, const char *ipstr, const 
         cp = WS_Dup(sp->wrk->ws, data);
         free((void *)data);
     }
-        
+
     return cp;
 }
 
@@ -56,9 +57,9 @@ vmod_lookup_weathercode(struct sess *sp, struct vmod_priv *global, const char *i
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
+    }
     data = geo_lookup_weather(mmdb_handle, ipstr, 1);
-    
+
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
         free(data);
@@ -77,9 +78,9 @@ vmod_lookup_timezone(struct sess *sp, struct vmod_priv *global, const char *ipst
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
+    }
     data = geo_lookup_timezone(mmdb_handle, ipstr, 1);
-    
+
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
         free(data);
@@ -98,9 +99,9 @@ vmod_lookup_location(struct sess *sp, struct vmod_priv *global, const char *ipst
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
+    }
     data = geo_lookup_location(mmdb_handle, ipstr, 1);
-    
+
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
         free(data);
@@ -183,7 +184,7 @@ vmod_get_weather_cookie(struct sess *sp, const char *cookiestr, const char *cook
         cp = WS_Dup(sp->wrk->ws, data);
         free(data);
     }
-    
+
     return cp;
 }
 
