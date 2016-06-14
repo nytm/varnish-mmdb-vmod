@@ -21,16 +21,16 @@ void usage() {
     fprintf(stdout, "-h : prints help.\n");
     fprintf(stdout, "-m <path to maxmind db file> : location to valid maxmind database file.\n");
     fprintf(stdout, "-t <ip> : US based IP address. Default is 4.4.4.4\n");
-    fprintf(stdout, "-v : if set will write to stdout. otherwise this program is silent.\n\n");
+    fprintf(stdout, "-s : if set will silence output. otherwise this program writes to stdout.\n\n");
 }
 
 char * MMDB_PATH = NULL;
-int verbose = 0;
+int verbose = 1;
 
 int main(int argc, char **argv) {
     int c, errno = 0;
     const char *testip = "4.4.4.4";
-    while ((c = getopt(argc, argv, "hm:t:v"))) {
+    while ((c = getopt(argc, argv, "hm:st:?")) != -1) {
         switch (c) {
         case 'h' :
             usage();
@@ -38,18 +38,18 @@ int main(int argc, char **argv) {
         case 'm' :
             MMDB_PATH = optarg;
             break;
+        case 's' :
+            verbose = 0;
+            break;
         case 't':
             testip = optarg;
             break;
-        case 'v' :
-            verbose = 1;
-            break;
         case '?' : // make it here if we we get an invalid option
             usage();
-            return 1;
+            return 0;
         default :
             fprintf (stdout,
-                     "Unknown option character... `\\x%x'.\n",
+                     "Unknown option character... 1\\x%x'.\n",
                      optopt);
             return 1;
         }
