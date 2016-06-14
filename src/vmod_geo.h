@@ -57,4 +57,4 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename);
 // get the value of a cookie by name.
 char *
 get_cookie(const char *cookiestr, const char *cookiename);
-#endif VMOD_GEO_H
+#endif
