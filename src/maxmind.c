@@ -15,8 +15,13 @@
 
 void usage();
 void usage() {
-    fprintf(stdout, "maxmind:\n");
+    fprintf(stdout, "\nPROGRAM: maxmind\n\n");
+    fprintf(stdout, "maxmind is a simple utility to valdate the MaxMind GeoIP2 database file.\n\n");
+    fprintf(stdout, "PARAMETERS:\n\n");
+    fprintf(stdout, "-h : prints help.\n");
     fprintf(stdout, "-m <path to maxmind db file> : location to valid maxmind database file.\n");
+    fprintf(stdout, "-t <ip> : US based IP address. Default is 4.4.4.4\n");
+    fprintf(stdout, "-v : if set will write to stdout. otherwise this program is silent.\n\n");
 }
 
 char * MMDB_PATH = NULL;
@@ -24,30 +29,36 @@ int verbose = 0;
 
 int main(int argc, char **argv) {
     int c, errno = 0;
-
-    while ((c = getopt (argc, argv, "m:v")) != -1) {
+    const char *testip = "4.4.4.4";
+    while ((c = getopt(argc, argv, "hm:t:v"))) {
         switch (c) {
+        case 'h' :
+            usage();
+            return 0;
         case 'm' :
             MMDB_PATH = optarg;
+            break;
+        case 't':
+            testip = optarg;
             break;
         case 'v' :
             verbose = 1;
             break;
-        case '?' :
-            if (optopt == 'm') {
-                fprintf(stderr, "Option -%c requires you give the location of the file to use.\n", optopt);
-            } else if (isprint (optopt)) {
-               fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-            } else {
-               fprintf (stderr,
-                        "Unknown option character `\\x%x'.\n",
-                        optopt);
-            }
+        case '?' : // make it here if we we get an invalid option
+            usage();
+            return 1;
         default :
+            fprintf (stdout,
+                     "Unknown option character... `\\x%x'.\n",
+                     optopt);
             return 1;
         }
     }
 
+    if (c == 1) {
+        usage();
+        return 1;
+    }
     if (MMDB_PATH == NULL) {
         usage();
         return 1;
@@ -64,16 +75,17 @@ int main(int argc, char **argv) {
 
     const char *country_lookup[] = {"country", "iso_code", NULL};
     const char *expected = "US";
-    char *actual = geo_lookup(&mmdb_handle, "4.4.4.4", country_lookup);
+
+    char *actual = geo_lookup(&mmdb_handle, testip, country_lookup);
     if (strncmp(actual, expected, 2)) {
         if (verbose) {
-            fprintf(stderr, "Invalid mamxind db file. Bad actual for 4.4.4.4 - should be 'US' but was '%s'\n", actual);
+            fprintf(stderr, "Invalid mamxind db file. Bad actual for %s - should be 'US' but was '%s'\n", testip, actual);
         }
         return 1;
     }
     MMDB_close(&mmdb_handle);
     if (verbose) {
-        fprintf(stdout, "maxmind db file valid.\n");
+        fprintf(stdout, "Valid maxmind db file.\n");
     }
     return 0;
 }
