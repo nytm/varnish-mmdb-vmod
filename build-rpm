@@ -1,6 +1,10 @@
 #!/bin/bash
+set -ETeu -o pipefail
 
-rpmbuild -bb ${WORKSPACE}/mmdb-vmod.spec --define "_build_number ${BUILD_NUMBER}" --define "_source ${WORKSPACE}"
+# base build number on git commit counts
+build_number=$(git rev-list HEAD | wc -l)
+
+rpmbuild -bb ${WORKSPACE}/mmdb-vmod.spec --define "_build_number ${build_number}" --define "_source ${WORKSPACE}"
 for e in $(find ~/rpmbuild/RPMS -name mmdb-vmod\*.rpm); do
     /usr/bin/sign-rpm $e
     /usr/bin/publish-rpm $e
