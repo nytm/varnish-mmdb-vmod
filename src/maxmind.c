@@ -24,11 +24,12 @@ void usage() {
     fprintf(stdout, "-s : if set will silence output. otherwise this program writes to stdout.\n\n");
 }
 
+
 char * MMDB_PATH = NULL;
 int verbose = 1;
 
 int main(int argc, char **argv) {
-    int c, errno = 0;
+    int c = 0;
     const char *testip = "4.4.4.4";
     while ((c = getopt(argc, argv, "hm:st:?")) != -1) {
         switch (c) {
@@ -76,7 +77,7 @@ int main(int argc, char **argv) {
     const char *country_lookup[] = {"country", "iso_code", NULL};
     const char *expected = "US";
 
-    char *actual = geo_lookup(&mmdb_handle, testip, country_lookup);
+    const char *actual = geo_lookup(&mmdb_handle, testip, country_lookup);
     if (strncmp(actual, expected, 2)) {
         if (verbose) {
             fprintf(stderr, "Invalid mamxind db file. Bad actual for %s - should be 'US' but was '%s'\n", testip, actual);
