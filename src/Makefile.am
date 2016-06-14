@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -D_GNU_SOURCE -DMAX_CITY_DB=\"$(MAX_CITY_DB)\"
+AM_CFLAGS = -Wall -D_GNU_SOURCE -DMAX_CITY_DB=\"$(MAX_CITY_DB)\" -DDEBUG=1
 AM_CPPFLAGS = -I$(VARNISHSRC)/include -I$(VARNISHSRC)
 
 vmoddir = $(VMODDIR)
@@ -13,6 +13,12 @@ libvmod_geo_la_SOURCES = \
 	geo_functions.c \
 	vmod_geo.c
 
+bin_PROGRAMS = maxmind
+maxmind_SOURCES = \
+	maxmind.c
+
+maxmind_LDADD = geo_functions.o
+maxmind_LDFLAGS = -lmaxminddb
 
 vcc_if.c vcc_if.h: $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_geo.vcc
 	@PYTHON@ $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_geo.vcc
