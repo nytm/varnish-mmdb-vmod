@@ -4,7 +4,7 @@
 %{!?source: %define source https://github.com/nytm/varnish-mmdb-vmod.git}
 %{!?_build_number: %define _build_number 1}
 
-Name:		libvmod-maxmind-geoip
+Name:		mmdb-vmod
 Version:	1.0.1
 Release:	%{_build_number}%{?dist}
 Summary:	A varnish module to do IP lookup using libmaxminddb
