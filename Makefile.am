@@ -19,6 +19,6 @@ else
 	@false
 endif
 
-test: 
+test:
 	tests/testrunner
 	$(MAKE) test -C src/tests
