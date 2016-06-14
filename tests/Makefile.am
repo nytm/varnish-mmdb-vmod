@@ -6,10 +6,9 @@ tests.c: .FORCE
 
 .FORCE:
 
-
 bin_PROGRAMS = testrunner test_ips
-testrunner_LDFLAGS = -lmaxminddb
-test_ips_LDFLAGS = -lmaxminddb
+testrunner_LDFLAGS = -lmaxminddb -lm
+test_ips_LDFLAGS = -lmaxminddb -lm
 testrunner_SOURCES = \
 	tests.c \
 	unity.c \
