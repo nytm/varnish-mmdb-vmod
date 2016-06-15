@@ -454,7 +454,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         country = get_value(&result, country_lookup);
         city    = get_value(&result, city_lookup);
 
-        if (country != NULL && strcmp(country,"US") == 0) {
+        if (country != NULL && strcmp(country, "US") == 0) {
             state = get_value(&result, state_lookup);
         } else {
             state = strdup("--");
@@ -475,14 +475,14 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 if (state == NULL) {
                     state = strdup("--");
                 }
-                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) ) + 1;
+                size_t chars = (sizeof(char) * ( 4 + strlen(country) + strlen(city) + strlen(state)) ) + 1;
                 data = malloc(chars);
-                sprintf(data, "%s%s%s", city, state, country);
+                sprintf(data, "iso-%s%s%s", city, state, country);
             }
         } else {
-            size_t chars = (sizeof(char)* ( strlen(country) + strlen(city) + strlen(state)) ) + 1;
+            size_t chars = (sizeof(char) * ( 4 + strlen(country) + strlen(city) + strlen(state)) ) + 1;
             data = malloc(chars);
-            sprintf(data, "%s%s%s", city, state, country);
+            sprintf(data, "iso-%s%s%s", city, state, country);
         }
 
     } else {
