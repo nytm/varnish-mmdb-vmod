@@ -250,11 +250,8 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 
     if (result.found_entry) {
 
-        fprintf(stderr, "There is an entry\n");
         country = get_value(&result, country_lookup);
-        fprintf(stderr, "The country is %s\n", country);
         city    = get_value(&result, city_lookup);
-        fprintf(stderr, "The city is %s\n", city);
         if (country != NULL && strcmp(country,"US") == 0) {
             state = get_value(&result, state_lookup);
         } else {
