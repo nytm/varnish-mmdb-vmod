@@ -30,11 +30,12 @@ const char *
 vmod_lookup(struct sess *sp, struct vmod_priv *global, const char *ipstr, const char **lookup_path)
 {
     const char *data;
-    char *cp   = NULL;
+    char *cp   = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
+
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
-        return NULL;
+        return cp;
     }
 
     data = geo_lookup(mmdb_handle, ipstr,lookup_path);
@@ -52,12 +53,14 @@ const char *
 vmod_lookup_weathercode(struct sess *sp, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
+    char *cp             = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
+
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
-        return NULL;
+        return cp;
     }
+
     data = geo_lookup_weather(mmdb_handle, ipstr, 1);
 
     if (data != NULL) {
@@ -73,12 +76,14 @@ const char *
 vmod_lookup_timezone(struct sess *sp, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
+    char *cp             = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
+
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
-        return NULL;
+        return cp;
     }
+
     data = geo_lookup_timezone(mmdb_handle, ipstr, 1);
 
     if (data != NULL) {
@@ -94,12 +99,14 @@ const char *
 vmod_lookup_location(struct sess *sp, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
+    char *cp             = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
+
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
-        return NULL;
+        return "";
     }
+
     data = geo_lookup_location(mmdb_handle, ipstr, 1);
 
     if (data != NULL) {
@@ -176,9 +183,8 @@ const char *
 vmod_get_weather_cookie(struct sess *sp, const char *cookiestr, const char *cookiename)
 {
     char *data = NULL;
-    char *cp   = NULL;
+    char *cp   = "";
     data       = get_weather_code_from_cookie(cookiestr, cookiename);
-
 
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
@@ -193,12 +199,32 @@ const char *
 vmod_get_cookie(struct sess *sp, const char *cookiestr, const char *cookiename)
 {
     char *data = NULL;
-    char *cp   = NULL;
+    char *cp   = "";
     data = get_cookie(cookiestr, cookiename);
 
     if (data != NULL) {
         cp = WS_Dup(sp->wrk->ws, data);
         free(data);
     }
+
     return cp;
+}
+
+int
+vmod_init_mmdb(struct sess *sp, struct vmod_priv *global, const char *mmdb_path)
+{
+    int mmdb_baddb = MMDB_open(mmdb_path, MMDB_MODE_MMAP, &mmdb_handle);
+    if (mmdb_baddb != MMDB_SUCCESS) {
+#ifdef DEBUG
+        fprintf(stderr, "[ERROR] open_mmdb: Can't open %s - %s\n",
+                mmdb_path, MMDB_strerror(mmdb_baddb));
+        if (MMDB_IO_ERROR == mmdb_baddb) {
+            fprintf(stderr,
+                    "[ERROR] open_mmdb: IO error: %s\n",
+                    strerror(mmdb_baddb));
+        }
+#endif
+        return 1;
+    }
+    return 0;
 }
