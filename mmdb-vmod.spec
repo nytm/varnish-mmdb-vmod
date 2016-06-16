@@ -55,6 +55,7 @@ make clean
 make -C tests tests.c
 make %{?_smp_mflags}
 
+%debug_package
 
 %install
 cd %{checkoutName}
