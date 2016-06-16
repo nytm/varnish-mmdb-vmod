@@ -108,7 +108,9 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                 uint16_t num = UINT16_MAX;
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
                 data         = calloc(sizeof(char), len+1);
-                snprintf(data, len, "%u", entry_data.uint16);
+                if (data != NULL) {
+                    snprintf(data, len, "%u", entry_data.uint16);
+                }
                 break;
             }
             default:
@@ -167,20 +169,26 @@ get_value(MMDB_lookup_result_s *result, const char **path)
             uint16_t num = UINT16_MAX;
             int len      = (int)((ceil(log10(num)))*sizeof(char));
             value        = calloc(sizeof(char), len+1);
-            snprintf(value, len, "%u", entry_data.uint16);
+            if (value != NULL) {
+                 snprintf(value, len, "%u", entry_data.uint16);
+            }
             break;
         }
         case MMDB_DATA_TYPE_DOUBLE: {
             double num = DBL_MAX;
             int len    = (int)((ceil(log10(num)))*sizeof(char));
             value      = calloc(sizeof(char), len+1);
-            snprintf(value, len, "%f", entry_data.double_value);
+            if (value != NULL) {
+                 snprintf(value, len, "%f", entry_data.double_value);
+            }
             break;
         }
         case MMDB_DATA_TYPE_BOOLEAN:
             // i'm assuming true == 1 and false == 0
             value   = calloc(sizeof(char), 2);
-            snprintf(value, 1, "%d", entry_data.boolean);
+            if (value != NULL) {
+                 snprintf(value, 1, "%d", entry_data.boolean);
+            }
             break;
         default:
 #ifdef DEBUG
@@ -284,7 +292,9 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             chars -= sizeof(char) * 6; // reduce by the number of %s
             data = malloc(chars+1);
 
-            sprintf(data, fmt, city, state, country);
+            if (data != NULL) {
+                sprintf(data, fmt, city, state, country);
+            }
         }
 
     } else {
