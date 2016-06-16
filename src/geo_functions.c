@@ -80,7 +80,6 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 
     // Parse results
     MMDB_entry_data_s entry_data;
-    int exit_code = 0;
 
     if (result.found_entry) {
         int status = MMDB_aget_value(&result.entry, &entry_data, lookup_path);
@@ -93,17 +92,14 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
  the lookup_path is correct. %s\n",
                     MMDB_strerror(status));
 #endif
-            exit_code = 4;
             return NULL;
         }
 
         if (entry_data.has_data) {
             switch(entry_data.type) {
-            case MMDB_DATA_TYPE_UTF8_STRING: {
-                //int extra = entry_data.data_size % 8;
+            case MMDB_DATA_TYPE_UTF8_STRING:
                 data = strndup(entry_data.utf8_string, entry_data.data_size);
                 break;
-            }
             case MMDB_DATA_TYPE_UINT16: {
                 uint16_t num = UINT16_MAX;
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
@@ -120,7 +116,6 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                         "[WARN] No handler for entry data type (%d) was found\n",
                         entry_data.type);
 #endif
-                exit_code = 6;
                 break;
             }
         } else {
@@ -133,7 +128,6 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                 "[INFO] No entry for this IP address (%s) was found\n",
                 ipstr);
 #endif
-        exit_code = 5;
         return NULL;
     }
     return data;
@@ -177,19 +171,21 @@ get_value(MMDB_lookup_result_s *result, const char **path)
         case MMDB_DATA_TYPE_DOUBLE: {
             double num = DBL_MAX;
             int len    = (int)((ceil(log10(num)))*sizeof(char));
+            len        = len * 2;
             value      = calloc(sizeof(char), len+1);
             if (value != NULL) {
                  snprintf(value, len, "%f", entry_data.double_value);
             }
             break;
         }
-        case MMDB_DATA_TYPE_BOOLEAN:
+        case MMDB_DATA_TYPE_BOOLEAN: {
             // i'm assuming true == 1 and false == 0
             value   = calloc(sizeof(char), 2);
             if (value != NULL) {
                  snprintf(value, 1, "%d", entry_data.boolean);
             }
             break;
+        }
         default:
 #ifdef DEBUG
             fprintf(
@@ -211,9 +207,9 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
         return strdup(DEFAULT_LOCATION);
     }
 
-    char *data;
+    char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status;
+    int ip_lookup_failed, db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -227,7 +223,7 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
         if (use_default) {
             return strdup(DEFAULT_LOCATION);
         } else {
-            return strdup("--");
+            return strdup("{}");
         }
     }
 
@@ -242,7 +238,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         if (use_default) {
             return strdup(DEFAULT_LOCATION);
         } else {
-            return strdup("--");
+            return strdup("{}");
         }
     }
 
@@ -281,19 +277,22 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 if (state == NULL) {
                     state = strdup("");
                 }
-                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)) ) + 1;
-                data = malloc(chars);
-                sprintf(data, "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}", city, state, country);
+                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
+                const char * format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+                chars += sizeof(char) * strlen(format);
+                chars -= sizeof(char) * 6; // reduce by the number of %s
+                data = calloc(sizeof(char), chars+1);
+                sprintf(data, format, city, state, country);
             }
         } else {
-            size_t chars = (sizeof(char)* (strlen(country) + strlen(city) + strlen(state)));
-            const char* fmt = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
-            chars += sizeof(char) * strlen(fmt);
+            size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
+            const char* format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+            chars += sizeof(char) * strlen(format);
             chars -= sizeof(char) * 6; // reduce by the number of %s
-            data = malloc(chars+1);
+            data = calloc(sizeof(char), chars+1);
 
             if (data != NULL) {
-                sprintf(data, fmt, city, state, country);
+                sprintf(data, format, city, state, country);
             }
         }
 
@@ -330,9 +329,9 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
         return strdup(DEFAULT_TIMEZONE);
     }
 
-    char *data;
+    char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status;
+    int ip_lookup_failed, db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -346,7 +345,7 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
         if (use_default) {
             return strdup(DEFAULT_TIMEZONE);
         } else {
-            return strdup("--");
+            return strdup("{}");
         }
     }
 
@@ -361,7 +360,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         if (use_default) {
             return strdup(DEFAULT_TIMEZONE);
         } else {
-            return strdup("--");
+            return strdup("{}");
         }
     }
 
@@ -378,9 +377,13 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         if (timezone == NULL) {
             data = strdup(DEFAULT_TIMEZONE);
         } else {
-            size_t chars = (sizeof(char)* ( strlen(timezone)) ) + 1;
-            data = malloc(chars);
-            sprintf(data, "{\"timezone\":\"%s\"}", timezone);
+            size_t chars = sizeof(char) * strlen(timezone);
+            const char *format = "{\"timezone\":\"%s\"}";
+            chars += sizeof(char) * (strlen(format) - 2); // less %s
+            data = calloc(sizeof(char), chars+1);
+            if (data != NULL) {
+                sprintf(data, format, timezone);
+            }
         }
 
     } else {
@@ -415,9 +418,9 @@ geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default
         return strdup(DEFAULT_WEATHER_CODE);
     }
 
-    char *data;
+    char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status;
+    int ip_lookup_failed, db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -485,14 +488,16 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 if (state == NULL) {
                     state = strdup("--");
                 }
-                size_t chars = (sizeof(char) * ( 4 + strlen(country) + strlen(city) + strlen(state)) ) + 1;
-                data = malloc(chars);
-                sprintf(data, "iso-%s%s%s", city, state, country);
+                const char * iso = "iso-";
+                size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
+                data = calloc(sizeof(char), chars+1);
+                sprintf(data, "%s%s%s%s", iso, city, state, country);
             }
         } else {
-            size_t chars = (sizeof(char) * ( 4 + strlen(country) + strlen(city) + strlen(state)) ) + 1;
-            data = malloc(chars);
-            sprintf(data, "iso-%s%s%s", city, state, country);
+            const char * iso = "iso-";
+            size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
+            data = calloc(sizeof(char), chars+1);
+            sprintf(data, "%s%s%s%s", iso, city, state, country);
         }
 
     } else {
