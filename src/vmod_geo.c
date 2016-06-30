@@ -10,7 +10,7 @@
 
 static MMDB_s mmdb_handle;
 //**********************************************************************
-// This has all of our vmod function definitions. This calls the 
+// This has all of our vmod function definitions. This calls the
 // functions defined in geo_functions.c
 //**********************************************************************
 
@@ -49,11 +49,11 @@ VCL_STRING
 vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **lookup_path)
 {
     const char *data;
-    char *cp   = NULL;
+    char *cp   = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
-        return NULL;
+        return cp;
     }
 
     data = geo_lookup(mmdb_handle, ipstr,lookup_path);
@@ -62,7 +62,7 @@ vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **l
         cp = WS_Copy(ctx->ws, data, strlen(data));
         free((void *)data);
     }
-        
+
     return cp;
 }
 
@@ -71,14 +71,14 @@ VCL_STRING
 vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
+    char *cp             = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
+    }
     data = geo_lookup_weather(mmdb_handle, ipstr, 1);
-    
+
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data));
         free(data);
@@ -92,14 +92,14 @@ VCL_STRING
 vmod_lookup_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = NULL;
+    char *cp             = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
+    }
     data = geo_lookup_timezone(mmdb_handle, ipstr, 1);
-    
+
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data));
         free(data);
@@ -118,9 +118,9 @@ vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
     if (mmdb_handle == NULL) {
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
-    }               
+    }
     data = geo_lookup_location(mmdb_handle, ipstr, 1);
-    
+
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data));
         free(data);
@@ -203,7 +203,7 @@ vmod_get_weather_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
         cp = WS_Copy(ctx->ws, data, strlen(data));
         free(data);
     }
-    
+
     return cp;
 }
 
