@@ -13,6 +13,7 @@ License:	Proprietary
 URL:		https://github.com/nytm/varnish-mmdb-vmod
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-%{_build_arch}-root-%(%{__id_u} -n)
 BuildRequires:	libmaxminddb git varnish-cache
+Requires: libmaxminddb
 
 %description
 This provides the MaxMind GeoIP feature.

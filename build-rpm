@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rpmbuild -bb ${WORKSPACE}/mmdb-vmod.spec --define "_build_number ${BUILD_NUMBER}" --define "_source ${WORKSPACE}"
-for e in $(find ~/rpmbuild/RPMS -name mmdb-vmod\*.rpm); do
+rpmbuild -bb ${WORKSPACE}/libvmod-maxmind-geoip.spec --define "_build_number ${BUILD_NUMBER}" --define "_source ${WORKSPACE}"
+for e in $(find ~/rpmbuild/RPMS -name libvmod-maxmind-geoip\*.rpm); do
     /usr/bin/sign-rpm $e
     /usr/bin/publish-rpm $e
     rm -f $e
