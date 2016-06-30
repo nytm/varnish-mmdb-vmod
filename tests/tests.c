@@ -17,7 +17,7 @@ void setUp(void)
 
 void tearDown(void)
 {
-    
+
 }
 
 void test_OpenMMDB(void)
@@ -26,12 +26,13 @@ void test_OpenMMDB(void)
     TEST_ASSERT_EQUAL_INT(0,mmdb_baddb);
 }
 
-void test_Sweden() 
+void test_Sweden()
 {
   char *ip = "188.178.203.190";
-  char *expected = "Copenhagen--DK";
+  char *expected = "iso-Copenhagen--DK";
   char *value = geo_lookup_weather(get_handle(), ip, 1);
   TEST_ASSERT_EQUAL_STRING(expected,value);
+  free((void *)value);
 }
 
 void test_BadIP(void)
@@ -47,7 +48,7 @@ void test_CaliforniaIP(void)
 {
     char * ip = "199.254.0.98";
     char * value = geo_lookup_weather(get_handle(), ip,1);
-    char * expected = "Beverly HillsCAUS";
+    char * expected = "iso-Beverly HillsCAUS";
     TEST_ASSERT_EQUAL_STRING(expected,value);
     free((void *)value);
 }
@@ -56,9 +57,9 @@ void test_ParisFranceIP(void)
 {
     char * ip = "88.190.229.170";
     char * value = geo_lookup_weather(get_handle(), ip,1);
-    char * expected = "Paris--FR";
+    char * expected = "iso-Paris--FR";
     TEST_ASSERT_EQUAL_STRING(expected,value);
-    free((void *)value);
+    free(value);
 }
 
 void test_LookupCity(void)
@@ -142,7 +143,7 @@ void test_GetCookie(void)
     }
 
 
-void test_GetEmptyCookie() 
+void test_GetEmptyCookie()
 {
   const char* cookiestra = "This=name; NYT_W2=; Other=abc";
   const char* cookiename = "NYT_W2";
@@ -153,7 +154,7 @@ void test_GetEmptyCookie()
 }
 
 
-void test_GetEmptyCookieA() 
+void test_GetEmptyCookieA()
 {
   const char* cookiestra = "This=name; NYT_W2  =Some; Other=abc";
   const char* cookiename = "NYT_W2";
@@ -163,7 +164,7 @@ void test_GetEmptyCookieA()
   free((void *)actual);
 }
 
-void test_GetEmptyCookieAb() 
+void test_GetEmptyCookieAb()
 {
   const char* cookiestra = "This=name; NYT_W2NYT_W2  =Some; Other=abc";
   const char* cookiename = "NYT_W2";
@@ -174,7 +175,7 @@ void test_GetEmptyCookieAb()
 }
 
 
-void test_GetEmptyCookieB() 
+void test_GetEmptyCookieB()
 {
   const char* cookiestra = "This=name; NYT_W2  =Some  ; Other=abc";
   const char* cookiename = "NYT_W2";
