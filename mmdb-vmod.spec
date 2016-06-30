@@ -20,19 +20,6 @@ This provides the MaxMind GeoIP feature.
 %prep
 rm -rf "%{checkoutName}"
 
-#if [ ! -d "%{_builddir}/%{varnishDir}" ]; then
-#  git clone "%{varnishSrc}" "%{varnishDir}"
-#  cd "%{_builddir}/%{varnishDir}"
-#  git branch 3.0 -t origin/3.0
-#  git checkout 3.0
-#  git checkout 1a89b1f75895bbf874e83cfc6f6123737a3fd76f
-#  ./autogen.sh
-#  ./configure --prefix=/usr
-#  make clean
-#  make
-#  cd  "%{_builddir}"
-#fi
-
 src="%{source}"
 if [[ "${src:0:7}" = "file://" ]] ; then :
     cp -R "${src:7}" "%{checkoutName}"
@@ -41,7 +28,6 @@ else
         git clone "%{source}" "%{checkoutName}"
     fi
     cd "%{checkoutName}"
-        
 fi
 
 
