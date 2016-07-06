@@ -2,10 +2,11 @@
 %define varnishSrc https://github.com/varnish/Varnish-Cache.git
 %define varnishDir VarnishCache-%{_build_arch}
 %{!?_build_number: %define _build_number 1}
+%{!?_version_number: %define _version_number 1.0.1}
 %{!?source: %define source https://github.com/nytm/varnish-mmdb-vmod.git}
 
 Name:		libvmod-maxmind-geoip
-Version:	1.0.1
+Version:	%{_version_number}
 Release:	%{_build_number}%{?dist}
 Summary:	A varnish module to do IP lookup using libmaxminddb
 Group:		Content APIS/DU
