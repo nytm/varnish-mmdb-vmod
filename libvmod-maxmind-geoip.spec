@@ -60,6 +60,7 @@ rm -rf $RPM_BUILD_ROOT
 mkdir $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
+%debug_package
 
 %clean
 #rm -rf $RPM_BUILD_ROOT
