@@ -48,7 +48,7 @@ init_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 VCL_STRING
 vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **lookup_path)
 {
-    const char *data;
+    char *data = NULL;
     char *cp   = "";
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
     if (mmdb_handle == NULL) {
