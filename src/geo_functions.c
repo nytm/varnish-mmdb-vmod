@@ -264,7 +264,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             state = strdup("");
         }
 
-        if (use_default) {
+        if ((country == NULL || city == NULL || state == NULL) && (use_default)) {
             data = strdup(DEFAULT_LOCATION);
         } else {
             if (country == NULL) {
@@ -465,7 +465,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             state = strdup("--");
         }
 
-        if (use_default) {
+        if ((country == NULL || city == NULL || state == NULL) && (use_default)) {
             data = strdup(DEFAULT_WEATHER_CODE);
         } else {
             if (country == NULL) {
