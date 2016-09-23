@@ -56,7 +56,8 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 {
     char *data = NULL;
     // Lookup IP in the DB
-    int gai_error, mmdb_error;
+    int gai_error = 0;
+    int mmdb_error = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &gai_error, &mmdb_error);
 
@@ -209,7 +210,8 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 
     char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status = 0;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -262,35 +264,23 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             state = strdup("");
         }
 
-        // we should always return new york
-        if (country == NULL || city == NULL || state == NULL) {
-
-            if (use_default) {
-                data = strdup(DEFAULT_LOCATION);
-            } else {
-                if (country == NULL) {
-                    country = strdup("");
-                }
-                if (city == NULL) {
-                    city = strdup("");
-                }
-                if (state == NULL) {
-                    state = strdup("");
-                }
-                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
-                const char * format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
-                chars += sizeof(char) * strlen(format);
-                chars -= sizeof(char) * 6; // reduce by the number of %s
-                data = calloc(sizeof(char), chars+1);
-                sprintf(data, format, city, state, country);
-            }
+        if (use_default) {
+            data = strdup(DEFAULT_LOCATION);
         } else {
+            if (country == NULL) {
+                country = strdup("");
+            }
+            if (city == NULL) {
+                city = strdup("");
+            }
+            if (state == NULL) {
+                state = strdup("");
+            }
             size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
-            const char* format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+            const char * format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
             chars += sizeof(char) * strlen(format);
             chars -= sizeof(char) * 6; // reduce by the number of %s
             data = calloc(sizeof(char), chars+1);
-
             if (data != NULL) {
                 sprintf(data, format, city, state, country);
             }
@@ -331,7 +321,8 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 
     char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status = 0;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -420,7 +411,8 @@ geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default
 
     char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status = 0;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -473,31 +465,24 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             state = strdup("--");
         }
 
-        // we should always return new york
-        if (country == NULL || city == NULL || state == NULL) {
-
-            if (use_default) {
-                data = strdup(DEFAULT_WEATHER_CODE);
-            } else {
-                if (country == NULL) {
-                    country = strdup("--");
-                }
-                if (city == NULL) {
-                    city = strdup("--");
-                }
-                if (state == NULL) {
-                    state = strdup("--");
-                }
-                const char * iso = "iso-";
-                size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
-                data = calloc(sizeof(char), chars+1);
-                sprintf(data, "%s%s%s%s", iso, city, state, country);
-            }
+        if (use_default) {
+            data = strdup(DEFAULT_WEATHER_CODE);
         } else {
+            if (country == NULL) {
+                country = strdup("--");
+            }
+            if (city == NULL) {
+                city = strdup("--");
+            }
+            if (state == NULL) {
+                state = strdup("--");
+            }
             const char * iso = "iso-";
             size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
             data = calloc(sizeof(char), chars+1);
-            sprintf(data, "%s%s%s%s", iso, city, state, country);
+            if (data != NULL) {
+                sprintf(data, "%s%s%s%s", iso, city, state, country);
+            }
         }
 
     } else {
@@ -605,11 +590,24 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         char *reg_country = get_value(&result, reg_lookup);
         if (reg_country != NULL) {
             fprintf(f, "%s,%s\n", ipstr, reg_country);
+            free(reg_country);
         }
         fprintf(f, "{\"%s\":", ipstr);
         MMDB_dump_entry_data_list(f, entry_data_list, 2);
         fprintf(f, "}\n");
 #endif
+        if (lat != NULL) {
+            free(lat);
+        }
+        if (lon != NULL) {
+            free(lon);
+        }
+        if (proxy != NULL) {
+            free(proxy);
+        }
+        if (satellite != NULL) {
+            free(satellite);
+        }
     }
     fclose(f);
 }
