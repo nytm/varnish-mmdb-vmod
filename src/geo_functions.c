@@ -277,7 +277,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 state = strdup("");
             }
             size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
-            const char * format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+            const char* format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
             chars += sizeof(char) * strlen(format);
             chars -= sizeof(char) * 6; // reduce by the number of %s
             data = calloc(sizeof(char), chars+1);
