@@ -106,7 +106,7 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
                 data         = calloc(sizeof(char), len+1);
                 if (data != NULL) {
-                    snprintf(data, len, "%u", entry_data.uint16);
+                    snprintf(data, len+1, "%u", entry_data.uint16);
                 }
                 break;
             }
@@ -165,7 +165,7 @@ get_value(MMDB_lookup_result_s *result, const char **path)
             int len      = (int)((ceil(log10(num)))*sizeof(char));
             value        = calloc(sizeof(char), len+1);
             if (value != NULL) {
-                 snprintf(value, len, "%u", entry_data.uint16);
+                 snprintf(value, len+1, "%u", entry_data.uint16);
             }
             break;
         }
@@ -175,7 +175,7 @@ get_value(MMDB_lookup_result_s *result, const char **path)
             len        = len * 2;
             value      = calloc(sizeof(char), len+1);
             if (value != NULL) {
-                 snprintf(value, len, "%f", entry_data.double_value);
+                 snprintf(value, len+1, "%lf", entry_data.double_value);
             }
             break;
         }
@@ -183,7 +183,7 @@ get_value(MMDB_lookup_result_s *result, const char **path)
             // i'm assuming true == 1 and false == 0
             value   = calloc(sizeof(char), 2);
             if (value != NULL) {
-                 snprintf(value, 1, "%d", entry_data.boolean);
+                 snprintf(value, 2, "%d", entry_data.boolean);
             }
             break;
         }
@@ -282,7 +282,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             chars -= sizeof(char) * 6; // reduce by the number of %s
             data = calloc(sizeof(char), chars+1);
             if (data != NULL) {
-                snprintf(data, chars, format, city, state, country);
+                snprintf(data, chars+1, format, city, state, country);
             }
         }
 
@@ -373,7 +373,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             chars += sizeof(char) * (strlen(format) - 2); // less %s
             data = calloc(sizeof(char), chars+1);
             if (data != NULL) {
-                snprintf(data, chars, format, timezone);
+                snprintf(data, chars+1, format, timezone);
             }
         }
 
@@ -481,7 +481,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
             data = calloc(sizeof(char), chars+1);
             if (data != NULL) {
-                snprintf(data, chars, "%s%s%s%s", iso, city, state, country);
+                snprintf(data, chars+1, "%s%s%s%s", iso, city, state, country);
             }
         }
 
