@@ -28,7 +28,11 @@ void close_mmdb(void *mmdb_handle)
     MMDB_close(handle);
 }
 
-// Open the maxmind db file
+/**
+ * open_mmdb - Open the maxmind db file.
+ *
+ * @return 0 for success, 1 for failure.
+ */
 int
 open_mmdb(MMDB_s *mmdb_handle)
 {
@@ -49,14 +53,18 @@ open_mmdb(MMDB_s *mmdb_handle)
     return 0;
 }
 
-// lookup an ip address using the maxmind db and return the value
-// lookup_path described in this doc: http://maxmind.github.io/MaxMind-DB/
+/**
+ * geo_lookup - lookup an ip address using the maxmind db and return the value
+ * lookup_path described in this doc: http://maxmind.github.io/MaxMind-DB/
+ * Note: free returned string if not null.
+ */
 const char *
 geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path)
 {
     char *data = NULL;
     // Lookup IP in the DB
-    int gai_error, mmdb_error;
+    int gai_error = 0;
+    int mmdb_error = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &gai_error, &mmdb_error);
 
@@ -199,6 +207,9 @@ get_value(MMDB_lookup_result_s *result, const char **path)
     return value;
 }
 
+/**
+ * geo_lookup_location
+ */
 char *
 geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 {
@@ -209,7 +220,8 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 
     char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status = 0;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -262,35 +274,23 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             state = strdup("");
         }
 
-        // we should always return new york
-        if (country == NULL || city == NULL || state == NULL) {
-
-            if (use_default) {
-                data = strdup(DEFAULT_LOCATION);
-            } else {
-                if (country == NULL) {
-                    country = strdup("");
-                }
-                if (city == NULL) {
-                    city = strdup("");
-                }
-                if (state == NULL) {
-                    state = strdup("");
-                }
-                size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
-                const char * format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
-                chars += sizeof(char) * strlen(format);
-                chars -= sizeof(char) * 6; // reduce by the number of %s
-                data = calloc(sizeof(char), chars+1);
-                sprintf(data, format, city, state, country);
-            }
+        if (use_default) {
+            data = strdup(DEFAULT_LOCATION);
         } else {
+            if (country == NULL) {
+                country = strdup("");
+            }
+            if (city == NULL) {
+                city = strdup("");
+            }
+            if (state == NULL) {
+                state = strdup("");
+            }
             size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
-            const char* format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
+            const char * format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
             chars += sizeof(char) * strlen(format);
             chars -= sizeof(char) * 6; // reduce by the number of %s
             data = calloc(sizeof(char), chars+1);
-
             if (data != NULL) {
                 sprintf(data, format, city, state, country);
             }
@@ -321,6 +321,9 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
     return data;
 }
 
+/**
+ * geo_lookup_timezone
+ */
 char *
 geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 {
@@ -331,7 +334,8 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 
     char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status = 0;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -403,13 +407,14 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
     return data;
 }
 
-// This function builds up a code we need to lookup weather
-// using Accuweather data.
-// country code                     e.g. US
-// city                             e.g. Beverly Hills
-// if country code == US, get region e.g. CA
-// And then return "Beverly HillsCAUS" if a US address or
-//                    "Paris--FR" if non US
+/**
+ * geo_lookup_weather - builds up a code we need to lookup weather using Accuweather data.
+ *   country code (e.g. US)
+ *   city (e.g. Beverly Hills)
+ * If country code == US, get region (e.g. CA)
+ * And then return "Beverly HillsCAUS" if a US address or
+ * "Paris--FR" if non-US address.
+ */
 char *
 geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 {
@@ -420,7 +425,8 @@ geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default
 
     char *data = NULL;
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status = 0;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -473,31 +479,24 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             state = strdup("--");
         }
 
-        // we should always return new york
-        if (country == NULL || city == NULL || state == NULL) {
-
-            if (use_default) {
-                data = strdup(DEFAULT_WEATHER_CODE);
-            } else {
-                if (country == NULL) {
-                    country = strdup("--");
-                }
-                if (city == NULL) {
-                    city = strdup("--");
-                }
-                if (state == NULL) {
-                    state = strdup("--");
-                }
-                const char * iso = "iso-";
-                size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
-                data = calloc(sizeof(char), chars+1);
-                sprintf(data, "%s%s%s%s", iso, city, state, country);
-            }
+        if (use_default) {
+            data = strdup(DEFAULT_WEATHER_CODE);
         } else {
+            if (country == NULL) {
+                country = strdup("--");
+            }
+            if (city == NULL) {
+                city = strdup("--");
+            }
+            if (state == NULL) {
+                state = strdup("--");
+            }
             const char * iso = "iso-";
             size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
             data = calloc(sizeof(char), chars+1);
-            sprintf(data, "%s%s%s%s", iso, city, state, country);
+            if (data != null) {
+                sprintf(data, "%s%s%s%s", iso, city, state, country);
+            }
         }
 
     } else {
@@ -537,7 +536,8 @@ dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *out
     }
 
     // Lookup IP in the DB
-    int ip_lookup_failed, db_status;
+    int ip_lookup_failed = 0;
+    int db_status = 0;
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
     if (ip_lookup_failed) {
@@ -605,11 +605,24 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         char *reg_country = get_value(&result, reg_lookup);
         if (reg_country != NULL) {
             fprintf(f, "%s,%s\n", ipstr, reg_country);
+            free(reg_country);
         }
         fprintf(f, "{\"%s\":", ipstr);
         MMDB_dump_entry_data_list(f, entry_data_list, 2);
         fprintf(f, "}\n");
 #endif
+        if (lat != NULL) {
+            free(lat);
+        }
+        if (lon != NULL) {
+            free(lon);
+        }
+        if (proxy != NULL) {
+            free(proxy);
+        }
+        if (satellite != NULL) {
+            free(satellite);
+        }
     }
     fclose(f);
 }
@@ -628,7 +641,9 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
     return found;
 }
 
-
+/**
+ * get_cookie - return cookie's value for specified cookie name.
+ */
 char *
 get_cookie(const char *cookiestr, const char *cookiename)
 {
