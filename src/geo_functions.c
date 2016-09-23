@@ -282,7 +282,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             chars -= sizeof(char) * 6; // reduce by the number of %s
             data = calloc(sizeof(char), chars+1);
             if (data != NULL) {
-                sprintf(data, format, city, state, country);
+                snprintf(data, chars, format, city, state, country);
             }
         }
 
@@ -373,7 +373,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             chars += sizeof(char) * (strlen(format) - 2); // less %s
             data = calloc(sizeof(char), chars+1);
             if (data != NULL) {
-                sprintf(data, format, timezone);
+                snprintf(data, chars, format, timezone);
             }
         }
 
@@ -481,7 +481,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
             data = calloc(sizeof(char), chars+1);
             if (data != NULL) {
-                sprintf(data, "%s%s%s%s", iso, city, state, country);
+                snprintf(data, chars, "%s%s%s%s", iso, city, state, country);
             }
         }
 
