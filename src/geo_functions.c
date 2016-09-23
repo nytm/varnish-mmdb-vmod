@@ -98,9 +98,10 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 
         if (entry_data.has_data) {
             switch(entry_data.type) {
-            case MMDB_DATA_TYPE_UTF8_STRING:
+            case MMDB_DATA_TYPE_UTF8_STRING: {
                 data = strndup(entry_data.utf8_string, entry_data.data_size);
                 break;
+            }
             case MMDB_DATA_TYPE_UINT16: {
                 uint16_t num = UINT16_MAX;
                 int len      = (int)((ceil(log10(num)))*sizeof(char));
@@ -157,9 +158,10 @@ get_value(MMDB_lookup_result_s *result, const char **path)
     char *value = NULL;
     if (entry_data.has_data) {
         switch(entry_data.type) {
-        case MMDB_DATA_TYPE_UTF8_STRING:
+        case MMDB_DATA_TYPE_UTF8_STRING: {
             value = strndup(entry_data.utf8_string, entry_data.data_size);
             break;
+        }
         case MMDB_DATA_TYPE_UINT16: {
             uint16_t num = UINT16_MAX;
             int len      = (int)((ceil(log10(num)))*sizeof(char));
@@ -673,7 +675,7 @@ get_cookie(const char *cookiestr, const char *cookiename)
 
     int len      = end - found;
     char* result = NULL;
-    result = (char*)calloc(sizeof(char), len+1);
+    result = calloc(sizeof(char), len+1);
     if (!result) {
         return NULL;
     }
