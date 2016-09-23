@@ -51,7 +51,7 @@ open_mmdb(MMDB_s *mmdb_handle)
 
 // lookup an ip address using the maxmind db and return the value
 // lookup_path described in this doc: http://maxmind.github.io/MaxMind-DB/
-const char *
+char *
 geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path)
 {
     char *data = NULL;
