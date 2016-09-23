@@ -60,7 +60,7 @@ vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **l
 
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data));
-        free((void *)data);
+        free(data);
     }
 
     return cp;
