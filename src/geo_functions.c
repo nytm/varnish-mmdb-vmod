@@ -494,7 +494,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             const char * iso = "iso-";
             size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
             data = calloc(sizeof(char), chars+1);
-            if (data != null) {
+            if (data != NULL) {
                 sprintf(data, "%s%s%s%s", iso, city, state, country);
             }
         }
