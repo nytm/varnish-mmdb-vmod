@@ -39,7 +39,7 @@ cd %{checkoutName}
 if [ ! -d buildinfo ]; then
 mkdir buildinfo
 echo "%{source}" >> buildinfo/source.txt
-git checkout -b v4.1 origin/v4.1
+git checkout -b master origin/master
 git branch > buildinfo/branch.txt
 git status > buildinfo/status.txt
 git remote --verbose show -n origin > buildinfo/origin.txt
