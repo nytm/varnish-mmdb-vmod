@@ -53,8 +53,11 @@ open_mmdb(MMDB_s *mmdb_handle)
 	return 0;
 }
 
-// lookup an ip address using the maxmind db and return the value
-// lookup_path described in this doc: http://maxmind.github.io/MaxMind-DB/
+/**
+ * geo_lookup takes a handle to the mmdb, an IP address and a lookup path
+ * and returns a string of the value or NULL.
+ * lookup_path is described in this doc: http://maxmind.github.io/MaxMind-DB/
+ */
 char *
 geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path)
 {
@@ -105,7 +108,7 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 			case MMDB_DATA_TYPE_UTF8_STRING: {
 				data = strndup(entry_data.utf8_string, entry_data.data_size);
 				break;
-			}  
+			}
 			case MMDB_DATA_TYPE_UINT16: {
 				uint16_t num = UINT16_MAX;
 				int len      = (int)((ceil(log10(num)))*sizeof(char));
@@ -139,12 +142,15 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 	return data;
 }
 
-// Given a valid result and some entry data, lookup a value
-// NOTE: You must free() the return value if != NULL
-//
-// @result - pointer to a result after calling MMDB_lookup_string
-// @path - lookup value for MMDB_aget_value
-// @return - NULL on failure
+/**
+ * Given a valid maxmind result and some entry data, lookup a value.
+ *
+ * NOTE: You must free() the return value if != NULL
+ *
+ * @result - pointer to a result after calling MMDB_lookup_string
+ * @path - lookup value for MMDB_aget_value
+ * @return - NULL if there's a failure or we didn't get the field
+ */
 char *
 get_value(MMDB_lookup_result_s *result, const char **path)
 {
@@ -207,7 +213,15 @@ get_value(MMDB_lookup_result_s *result, const char **path)
 }
 
 /**
- * geo_lookup_location
+ * Given a handle to the mmdb file and an IP string, attempt to get the
+ * location and format it as json. If use_default is set to true, we will
+ * return the DEFAULT_LOCATION if we can't get the city, state or country
+ * during the mmdb lookup. A success will return json.
+ *
+ * @param mmdb_handle - handle to the mmdb file
+ * @param ipstr - ip address in string format e.g. 4.4.4.4
+ * @param use_default - if true, return default on failures
+ * @return string - json e.g. {"city":"New York","state":"NY","country":"US"}
  */
 char *
 geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
@@ -321,7 +335,15 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 }
 
 /**
- * geo_lookup_timezone
+ * Given a handle to the mmdb file and an IP string, attempt to get the
+ * timezone and format it as json. If use_default is set to true, we will
+ * return the DEFAULT_TIMEZONE if we can't get the data
+ * during the mmdb lookup. A success will return json.
+ *
+ * @param mmdb_handle - handle to the mmdb file
+ * @param ipstr - ip address in string format e.g. 4.4.4.4
+ * @param use_default - if true, return default on failures
+ * @return string - json e.g. {"timezone":"America/New_York"}
  */
 char *
 geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
@@ -413,6 +435,11 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
  * If country code == US, get region (e.g. CA)
  * And then return "Beverly HillsCAUS" if a US address or
  * "Paris--FR" if non-US address.
+ *
+ * @param mmdb_handle - handle to the mmdb file
+ * @param ipstr - ip address in string format e.g. 4.4.4.4
+ * @param use_default - if true, return default on failures
+ * @return string - Accuweather code e.g. "Beverly HillsCAUS"
  */
 char *
 geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
@@ -494,10 +521,17 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 			size_t chars = sizeof(char) * (strlen(iso) + strlen(country) + strlen(city) + strlen(state));
 			data = calloc(sizeof(char), chars+1);
 			if (data != NULL) {
-				snprintf(data, chars+1, "%s%s%s%s", iso, city, state, country);
+				int written = snprintf(data, chars+1, "%s%s%s%s", iso, city, state, country);
+				if (written != chars) {
+					if (use_default) {
+						free(data);
+						data = strdup(DEFAULT_WEATHER_CODE);
+					} else {
+						data[0] = '\0';
+					}
+				}
 			}
 		}
-
 	} else {
 #ifdef DEBUG
 		fprintf(
@@ -525,7 +559,9 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 
 
 
-// a utility function for doing large scale testing
+/**
+ * a utility function for doing large scale testing
+ */
 void
 dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *outputfile)
 {
@@ -626,7 +662,14 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 	fclose(f);
 }
 
-// we only want the first part of the cookie, up to the |
+/**
+ * Specific to our needs, given a cookie string and the name, return
+ * the value of that string up to the first |
+ *
+ * @param string cookiestr - the http request header value of "Cookie:"
+ * @param string cookiename - the cookie name you want a value of
+ * @return string - the value or NULL
+ */
 char *
 get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
 {
@@ -641,7 +684,10 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename)
 }
 
 /**
- * get_cookie - return cookie's value for specified cookie name.
+ * Return cookie's value for specified cookie name.
+ * @param string cookiestr - the http request header value of "Cookie:"
+ * @param string cookiename - the cookie name you want a value of
+ * @return string - the value or NULL
  */
 char *
 get_cookie(const char *cookiestr, const char *cookiename)
