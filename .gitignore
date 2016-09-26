@@ -28,6 +28,5 @@ Makefile.in
 
 /src/vcc_if.c
 /src/vcc_if.h
-/tests/test_Runner.c
 /tests/testrunner
 /tests/test_ips

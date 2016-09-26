@@ -22,7 +22,7 @@ open_mmdb(MMDB_s *);
 char *
 get_value(MMDB_lookup_result_s *, const char **);
 
-const char *
+char *
 geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path);
 
 // a utility function. Suppose you have an IP that you tought failed
