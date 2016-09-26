@@ -78,10 +78,17 @@ vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
     }
-    data = geo_lookup_weather(mmdb_handle, ipstr, 1);
 
-    if (data != NULL) {
-        cp = WS_Copy(ctx->ws, data, strlen(data)+1);
+    data = geo_lookup_weather(mmdb_handle, ipstr, 1);
+    int len = 0;
+
+    if (data != NULL && (len = strlen(data)) > 0) {
+        cp = WS_Copy(ctx->ws, data, len+1);
+        if (cp == NULL) {
+            cp = "";
+        } else {
+            cp[len] = '\0';
+        }
         free(data);
     }
 
