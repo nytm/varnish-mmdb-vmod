@@ -80,7 +80,7 @@ git clone --recursive https://github.com/maxmind/libmaxminddb.git
 cd libmaxminddb
 git submodule update
 ./bootstrap
-./configure --prefix=/usr/local
+./configure --prefix=/usr
 make 
 sudo make install
 cd ..
