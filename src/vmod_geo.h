@@ -57,4 +57,7 @@ get_weather_code_from_cookie(const char *cookiestr, const char *cookiename);
 // get the value of a cookie by name.
 char *
 get_cookie(const char *cookiestr, const char *cookiename);
+
+char *
+geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
 #endif

@@ -12,10 +12,12 @@
 // free the return values.
 //**********************************************************************
 
-static char*  MMDB_CITY_PATH = MAX_CITY_DB;
-static char*  DEFAULT_WEATHER_CODE = "New YorkNYUS";
-static char*  DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
-static char*  DEFAULT_TIMEZONE = "{\"timezone\":\"America/New_York\"}";
+static char* MMDB_CITY_PATH = MAX_CITY_DB;
+static char* DEFAULT_WEATHER_CODE = "New YorkNYUS";
+static char* DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
+static char* DEFAULT_TIMEZONE = "{\"timezone\":\"America/New_York\"}";
+// 620 8th ave :-)
+static char* DEFAULT_LATLON = "40.7561041:-73.9922971";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
@@ -748,4 +750,116 @@ get_cookie(const char *cookiestr, const char *cookiename)
     }
     strncpy(result, found, len);
     return result;
+}
+
+/**
+ * Given a handle to the mmdb file and an IP string, attempt to get the
+ * latlon and format it as json. If use_default is set to true, we will
+ * return the DEFAULT_LATLON if we can't get the data
+ * during the mmdb lookup. A success will return json.
+ *
+ * @param mmdb_handle - handle to the mmdb file
+ * @param ipstr - ip address in string format e.g. 4.4.4.4
+ * @param use_default - if true, return default on failures
+ * @return string - json e.g.
+ *     {"lat":"41.0", "lon":"41.0"}
+ */
+char *
+geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+{
+    if (mmdb_handle == NULL || ipstr == NULL) {
+        fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
+        return strdup(DEFAULT_LATLON);
+    }
+
+    char *data = NULL;
+    // Lookup IP in the DB
+    int ip_lookup_failed = 0;
+    int db_status = 0;
+    MMDB_lookup_result_s result =
+        MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
+
+    if (ip_lookup_failed) {
+#ifdef DEBUG
+        fprintf(stderr,
+                "[WARN] geo_lookup_latlon: Error from getaddrinfo for IP: %s Error Message: %s\n",
+                ipstr, gai_strerror(ip_lookup_failed));
+#endif
+        // we don't want null, if we're not using default
+        if (use_default) {
+            return strdup(DEFAULT_LATLON);
+        } else {
+            return strdup("");
+        }
+    }
+
+    if (db_status != MMDB_SUCCESS) {
+#ifdef DEBUG
+        fprintf(stderr,
+                "[ERROR] geo_lookup_latlon: libmaxminddb failure. \
+Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
+                MMDB_CITY_PATH,
+                MMDB_strerror(db_status));
+#endif
+        if (use_default) {
+            return strdup(DEFAULT_LATLON);
+        } else {
+            return strdup("");
+        }
+    }
+
+    // these are used to extract values from the mmdb
+    const char *lat_lookup[] = {"location", "latitude", NULL};
+    const char *lon_lookup[] = {"location", "longitude", NULL};
+    char *lat = NULL;
+    char *lon = NULL;
+
+    if (result.found_entry) {
+        lat = get_value(&result, lat_lookup);
+        lon = get_value(&result, lon_lookup);
+
+        if (lat == NULL || lon == NULL) {
+            if (use_default) {
+                data = strdup(DEFAULT_LATLON);
+            } else {
+                data = strdup("");
+            }
+        } else {
+            size_t chars = sizeof(char) * strlen(lat) + strlen(lon);
+            const char *format = "%s:%s";
+            chars += sizeof(char) * (strlen(format) - 4); // less %s
+            data = calloc(sizeof(char), chars+1);
+            if (data != NULL) {
+                snprintf(data, chars+1, format, lat, lon);
+            } else {
+                if (use_default) {
+                    data = strdup(DEFAULT_LATLON);
+                } else {
+                    data = strdup("");
+                }
+            }
+        }
+    } else {
+#ifdef DEBUG
+        fprintf(
+            stderr,
+            "[INFO] No entry for this IP address (%s) was found\n",
+            ipstr);
+#endif
+        if (use_default) {
+            data = strdup(DEFAULT_LATLON);
+        } else {
+            data = strdup("");
+        }
+    }
+
+    if (lat != NULL) {
+        free(lat);
+    }
+
+    if (lon != NULL) {
+        free(lon);
+    }
+
+    return data;
 }

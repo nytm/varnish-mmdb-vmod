@@ -250,3 +250,25 @@ vmod_init_mmdb(struct sess *sp, struct vmod_priv *global, const char *mmdb_path)
     }
     return 0;
 }
+
+// lookup a Timezone from ip address
+VCL_STRING
+vmod_laton(VRT_CTX, struct vmod_priv *global, const char *ipstr)
+{
+    char *data           = NULL;
+    char *cp             = "";
+    MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
+
+    if (mmdb_handle == NULL) {
+        fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
+        return NULL;
+    }
+    data = geo_lookup_latlon(mmdb_handle, ipstr, 1);
+
+    if (data != NULL) {
+        cp = WS_Copy(ctx->ws, data, strlen(data)+1);
+        free(data);
+    }
+
+    return cp;
+}
