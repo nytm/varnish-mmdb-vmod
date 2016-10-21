@@ -825,7 +825,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 data = strdup("");
             }
         } else {
-            size_t chars = sizeof(char) * strlen(lat) + strlen(lon);
+            size_t chars = sizeof(char) * (strlen(lat) + strlen(lon));
             const char *format = "%s:%s";
             chars += sizeof(char) * (strlen(format) - 4); // less %s
             data = calloc(sizeof(char), chars+1);
