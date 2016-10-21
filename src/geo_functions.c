@@ -761,8 +761,8 @@ get_cookie(const char *cookiestr, const char *cookiename)
  * @param mmdb_handle - handle to the mmdb file
  * @param ipstr - ip address in string format e.g. 4.4.4.4
  * @param use_default - if true, return default on failures
- * @return string - json e.g.
- *     {"lat":"41.0", "lon":"41.0"}
+ * @return string - lat:lon e.g.
+ *     "40.7561041:-73.9922971"
  */
 char *
 geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
