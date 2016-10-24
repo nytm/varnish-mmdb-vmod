@@ -253,7 +253,7 @@ vmod_init_mmdb(struct sess *sp, struct vmod_priv *global, const char *mmdb_path)
 
 // lookup a Timezone from ip address
 VCL_STRING
-vmod_laton(VRT_CTX, struct vmod_priv *global, const char *ipstr)
+vmod_latlon(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
     char *cp             = "";
