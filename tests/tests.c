@@ -106,8 +106,9 @@ void test_LookupCountry(void)
 void test_LookupLocation(void)
 {
     char *ip = "199.254.0.98";
-    char *actual = geo_lookup_location(get_handle(), ip, 1);
-    char *expected = "{\"city\":\"Beverly Hills\",\"state\":\"CA\",\"country\":\"US\"}";
+    char *actual = geo_lookup_location(get_handle(), ip);
+    char *expected = "{\"city\":\"Beverly Hills\",\"state\":\"CA\",\"country\":\"US\",\"lat\":34.060700,\"lon\":-118.403200,\"ip\":\"199.254.0.98\",\"response_code\":200}";
+
     TEST_ASSERT_EQUAL_STRING(expected, actual);
     free(actual);
 }
