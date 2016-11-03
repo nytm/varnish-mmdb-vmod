@@ -12,12 +12,13 @@
 // free the return values.
 //**********************************************************************
 
-static char* MMDB_CITY_PATH = MAX_CITY_DB;
-static char* DEFAULT_WEATHER_CODE = "New YorkNYUS";
-static char* DEFAULT_LOCATION = "{\"city\":\"New York\",\"state\":\"NY\",\"country\":\"US\"}";
-static char* DEFAULT_TIMEZONE = "{\"timezone\":\"America/New_York\"}";
-// 620 8th ave :-)
-static char* DEFAULT_LATLON = "40.7561041:-73.9922971";
+static char *MMDB_CITY_PATH          = MAX_CITY_DB;
+static char *DEFAULT_WEATHER_CODE    = "New YorkNYUS";
+static char *DEFAULT_LOCATION        = "{\"response_code\":404}";
+static char *ERROR_LOCATION          = "{\"response_code\":500}";
+static char *DEFAULT_TIMEZONE        = "{\"timezone\":\"America/New_York\"}";
+static char *DEFAULT_LATLON          = "404";
+static char *ERROR_LATLON            = "500";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
@@ -63,10 +64,10 @@ open_mmdb(MMDB_s *mmdb_handle)
 char *
 geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_path)
 {
-    char *data = NULL;
-    // Lookup IP in the DB
-    int gai_error = 0;
+    char *data     = NULL;
+    int gai_error  = 0;
     int mmdb_error = 0;
+
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &gai_error, &mmdb_error);
 
@@ -228,17 +229,17 @@ get_value(MMDB_lookup_result_s *result, const char **path)
  *    {"city":"Hanoi","state":"","country":"VN"}
  */
 char *
-geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr)
 {
     if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_LOCATION);
+        return strdup(ERROR_LOCATION);
     }
 
-    char *data = NULL;
-    // Lookup IP in the DB
+    char *data           = NULL;
     int ip_lookup_failed = 0;
-    int db_status = 0;
+    int db_status        = 0;
+
     MMDB_lookup_result_s result =
         MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -249,11 +250,7 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
                 ipstr, gai_strerror(ip_lookup_failed));
 #endif
         // we don't want null, if we're not using default
-        if (use_default) {
-            return strdup(DEFAULT_LOCATION);
-        } else {
-            return strdup("{}");
-        }
+        return strdup(ERROR_LOCATION);
     }
 
     if (db_status != MMDB_SUCCESS) {
@@ -264,54 +261,62 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 MMDB_CITY_PATH,
                 MMDB_strerror(db_status));
 #endif
-        if (use_default) {
-            return strdup(DEFAULT_LOCATION);
-        } else {
-            return strdup("{}");
-        }
+        return strdup(ERROR_LOCATION);
     }
 
     // these varaibles will hold our results
     char *country = NULL;
     char *city    = NULL;
     char *state   = NULL;
+    char *lat     = NULL;
+    char *lon     = NULL;
 
     // these are used to extract values from the mmdb
     const char *country_lookup[] = {"country", "iso_code", NULL};
     const char *city_lookup[]    = {"city", "names", "en", NULL};
     const char *state_lookup[]   = {"subdivisions", "0", "iso_code", NULL};
+    const char *lat_lookup[]     = {"location", "latitude", NULL};
+    const char *lon_lookup[]     = {"location", "longitude", NULL};
 
     if (result.found_entry) {
 
         country = get_value(&result, country_lookup);
         city    = get_value(&result, city_lookup);
+        lat     = get_value(&result, lat_lookup);
+        lon     = get_value(&result, lon_lookup);
+
+        // only lookup the state if country is US
         if (country != NULL && strcmp(country,"US") == 0) {
             state = get_value(&result, state_lookup);
         } else {
             state = strdup("");
         }
-
-        if ((country == NULL || city == NULL || state == NULL) && (use_default)) {
-            data = strdup(DEFAULT_LOCATION);
-        } else {
-            if (country == NULL) {
-                country = strdup("");
-            }
-            if (city == NULL) {
-                city = strdup("");
-            }
-            if (state == NULL) {
-                state = strdup("");
-            }
-            size_t chars = (sizeof(char) * (strlen(country) + strlen(city) + strlen(state)));
-            const char* format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\"}";
-            chars += sizeof(char) * strlen(format);
-            chars -= sizeof(char) * 6; // reduce by the number of %s
-            data = calloc(sizeof(char), chars+1);
-            if (data != NULL) {
-                snprintf(data, chars+1, format, city, state, country);
-            }
+        if (country == NULL) {
+            country = strdup("");
         }
+        if (city == NULL) {
+            city = strdup("");
+        }
+        if (state == NULL) {
+            state = strdup("");
+        }
+        if (lat == NULL) {
+            lat = strdup("");
+        }
+        if (lon == NULL) {
+            lon = strdup("");
+        }
+        size_t chars = strlen(country) + strlen(city) + strlen(state) + strlen(lat) + strlen(lon) + strlen(ipstr);
+        const char* format = "{\"city\":\"%s\",\"state\":\"%s\",\"country\":\"%s\",\"lat\":%s,\"lon\":%s,\"ip\":\"%s\",\"response_code\":200}";
+        chars += strlen(format);
+        chars -= 12; // reduce by the number of %s
+        data  = calloc(sizeof(char), chars+1);
+        if (data != NULL) {
+            snprintf(data, chars+1, format, city, state, country, lat, lon, ipstr);
+        } else {
+            data = strdup(ERROR_LOCATION);
+        }
+
 
     } else {
 #ifdef DEBUG
@@ -320,7 +325,16 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             "[INFO] No entry for this IP address (%s) was found\n",
             ipstr);
 #endif
-        data = strdup(DEFAULT_LOCATION);
+        size_t chars = strlen(ipstr);
+        const char* format = "{\"ip\":\"%s\",\"response_code\":404}";
+        chars += strlen(format);
+        chars -= 2;
+        data  = calloc(sizeof(char), chars+1);
+        if (data != NULL) {
+            snprintf(data, chars+1, format, ipstr);
+        } else {
+            data = strdup(ERROR_LOCATION);
+        }
     }
 
     if (country != NULL) {
@@ -333,6 +347,14 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 
     if (state != NULL) {
         free(state);
+    }
+
+    if (lat != NULL) {
+        free(lat);
+    }
+
+    if (lon != NULL) {
+        free(lon);
     }
 
     return data;
@@ -769,7 +791,7 @@ geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 {
     if (mmdb_handle == NULL || ipstr == NULL) {
         fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-        return strdup(DEFAULT_LATLON);
+        return strdup(ERROR_LATLON);
     }
 
     char *data = NULL;
@@ -785,12 +807,7 @@ geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
                 "[WARN] geo_lookup_latlon: Error from getaddrinfo for IP: %s Error Message: %s\n",
                 ipstr, gai_strerror(ip_lookup_failed));
 #endif
-        // we don't want null, if we're not using default
-        if (use_default) {
-            return strdup(DEFAULT_LATLON);
-        } else {
-            return strdup("");
-        }
+        return strdup(ERROR_LATLON);
     }
 
     if (db_status != MMDB_SUCCESS) {
@@ -801,11 +818,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
                 MMDB_CITY_PATH,
                 MMDB_strerror(db_status));
 #endif
-        if (use_default) {
-            return strdup(DEFAULT_LATLON);
-        } else {
-            return strdup("");
-        }
+        return strdup(DEFAULT_LATLON);
     }
 
     // these are used to extract values from the mmdb
@@ -819,11 +832,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
         lon = get_value(&result, lon_lookup);
 
         if (lat == NULL || lon == NULL) {
-            if (use_default) {
-                data = strdup(DEFAULT_LATLON);
-            } else {
-                data = strdup("");
-            }
+            data = strdup(DEFAULT_LATLON);
         } else {
             const char *format = "%s:%s";
             size_t chars = strlen(lat) + strlen(lon);
@@ -832,11 +841,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             if (data != NULL) {
                 snprintf(data, chars+1, format, lat, lon);
             } else {
-                if (use_default) {
-                    data = strdup(DEFAULT_LATLON);
-                } else {
-                    data = strdup("");
-                }
+                data = strdup(DEFAULT_LATLON);
             }
         }
     } else {
@@ -846,11 +851,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
             "[INFO] No entry for this IP address (%s) was found\n",
             ipstr);
 #endif
-        if (use_default) {
-            data = strdup(DEFAULT_LATLON);
-        } else {
-            data = strdup("");
-        }
+        data = strdup(DEFAULT_LATLON);
     }
 
     if (lat != NULL) {

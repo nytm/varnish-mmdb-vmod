@@ -129,7 +129,7 @@ vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
     }
-    data = geo_lookup_location(mmdb_handle, ipstr, 1);
+    data = geo_lookup_location(mmdb_handle, ipstr);
 
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);

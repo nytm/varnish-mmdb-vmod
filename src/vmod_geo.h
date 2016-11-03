@@ -37,7 +37,7 @@ geo_lookup_weather(MMDB_s *const mmdb_handle, const char *ipstr, int use_default
 
 // lookup a location from ip address
 char *
-geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr);
 
 // lookup a timezone from ip address
 char *
