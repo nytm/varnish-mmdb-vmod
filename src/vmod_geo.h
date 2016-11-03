@@ -59,5 +59,5 @@ char *
 get_cookie(const char *cookiestr, const char *cookiename);
 
 char *
-geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default);
+geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr);
 #endif

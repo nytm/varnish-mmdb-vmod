@@ -263,7 +263,7 @@ vmod_latlon(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         fprintf(stderr, "[WARN] varnish gave NULL maxmind db handle");
         return NULL;
     }
-    data = geo_lookup_latlon(mmdb_handle, ipstr, 1);
+    data = geo_lookup_latlon(mmdb_handle, ipstr);
 
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);

@@ -57,7 +57,7 @@ void test_CaliforniaIP(void)
 void test_CaliforniaLatlon(void)
 {
   char *ip = "199.254.0.98";
-  char *value = geo_lookup_latlon(get_handle(), ip,1);
+  char *value = geo_lookup_latlon(get_handle(), ip);
   printf("latlon: %s\n", value);
   char *expected = "34.060700:-118.403200";
   TEST_ASSERT_EQUAL_STRING(expected,value);

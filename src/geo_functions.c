@@ -18,7 +18,7 @@ static char *DEFAULT_LOCATION     = "{\"response_code\":404}";
 static char *ERROR_LOCATION       = "{\"response_code\":500}";
 static char *DEFAULT_TIMEZONE     = "{\"timezone\":\"America/New_York\"}";
 static char *DEFAULT_LATLON       = "404";
-static char *ERROR_LATLON         = "404";
+static char *ERROR_LATLON         = "500";
 
 // close gets called by varnish when then the treads destroyed
 void close_mmdb(void *mmdb_handle)
@@ -785,17 +785,16 @@ get_cookie(const char *cookiestr, const char *cookiename)
  *     "40.7561041:-73.9922971"
  */
 char *
-geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
+geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr)
 {
 	if (mmdb_handle == NULL || ipstr == NULL) {
 		fprintf(stderr, "[WARN] geo vmod given NULL maxmind db handle");
-		return strdup(DEFAULT_LATLON);
+		return strdup(ERROR_LATLON);
 	}
 
-	char *data = NULL;
-	// Lookup IP in the DB
-	int ip_lookup_failed = 0;
-	int db_status = 0;
+	char *data				= NULL;
+	int ip_lookup_failed	= 0;
+	int db_status			= 0;
 	MMDB_lookup_result_s result =
 		MMDB_lookup_string(mmdb_handle, ipstr, &ip_lookup_failed, &db_status);
 
@@ -805,12 +804,7 @@ geo_lookup_latlon(MMDB_s *const mmdb_handle, const char *ipstr, int use_default)
 				"[WARN] geo_lookup_latlon: Error from getaddrinfo for IP: %s Error Message: %s\n",
 				ipstr, gai_strerror(ip_lookup_failed));
 #endif
-		// we don't want null, if we're not using default
-		if (use_default) {
-			return strdup(DEFAULT_LATLON);
-		} else {
-			return strdup("");
-		}
+		return strdup(ERROR_LATLON);
 	}
 
 	if (db_status != MMDB_SUCCESS) {
@@ -821,11 +815,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 				MMDB_CITY_PATH,
 				MMDB_strerror(db_status));
 #endif
-		if (use_default) {
-			return strdup(DEFAULT_LATLON);
-		} else {
-			return strdup("");
-		}
+		return strdup(ERROR_LATLON);
 	}
 
 	// these are used to extract values from the mmdb
@@ -839,11 +829,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 		lon = get_value(&result, lon_lookup);
 
 		if (lat == NULL || lon == NULL) {
-			if (use_default) {
-				data = strdup(DEFAULT_LATLON);
-			} else {
-				data = strdup("");
-			}
+			data = strdup(DEFAULT_LATLON);
 		} else {
 			const char *format = "%s:%s";
 			size_t chars = strlen(lat) + strlen(lon);
@@ -852,11 +838,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 			if (data != NULL) {
 				snprintf(data, chars+1, format, lat, lon);
 			} else {
-				if (use_default) {
-					data = strdup(DEFAULT_LATLON);
-				} else {
-					data = strdup("");
-				}
+				data = strdup(ERROR_LATLON);
 			}
 		}
 	} else {
@@ -866,11 +848,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 			"[INFO] No entry for this IP address (%s) was found\n",
 			ipstr);
 #endif
-		if (use_default) {
-			data = strdup(DEFAULT_LATLON);
-		} else {
-			data = strdup("");
-		}
+		data = strdup(DEFAULT_LATLON);
 	}
 
 	if (lat != NULL) {
