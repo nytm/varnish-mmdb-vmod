@@ -49,7 +49,7 @@ VCL_STRING
 vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **lookup_path)
 {
     char *data = NULL;
-    char *cp   = "";
+    char *cp   = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
 
     if (mmdb_handle == NULL) {
@@ -61,6 +61,8 @@ vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **l
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
@@ -71,7 +73,7 @@ VCL_STRING
 vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = "";
+    char *cp             = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
 
     if (mmdb_handle == NULL) {
@@ -90,6 +92,8 @@ vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
             cp[len] = '\0';
         }
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
@@ -100,7 +104,7 @@ VCL_STRING
 vmod_lookup_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = "";
+    char *cp             = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
 
     if (mmdb_handle == NULL) {
@@ -112,6 +116,8 @@ vmod_lookup_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
@@ -122,7 +128,7 @@ VCL_STRING
 vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = "";
+    char *cp             = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
 
     if (mmdb_handle == NULL) {
@@ -134,6 +140,8 @@ vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
@@ -205,12 +213,14 @@ VCL_STRING
 vmod_get_weather_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
 {
     char *data = NULL;
-    char *cp   = "";
+    char *cp   = NULL;
     data       = get_weather_code_from_cookie(cookiestr, cookiename);
 
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
@@ -221,12 +231,14 @@ VCL_STRING
 vmod_get_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
 {
     char *data = NULL;
-    char *cp   = "";
+    char *cp   = NULL;
     data = get_cookie(cookiestr, cookiename);
 
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
@@ -256,7 +268,7 @@ VCL_STRING
 vmod_latlon(VRT_CTX, struct vmod_priv *global, const char *ipstr)
 {
     char *data           = NULL;
-    char *cp             = "";
+    char *cp             = NULL;
     MMDB_s * mmdb_handle = (struct MMDB_s *)global->priv;
 
     if (mmdb_handle == NULL) {
@@ -268,6 +280,8 @@ vmod_latlon(VRT_CTX, struct vmod_priv *global, const char *ipstr)
     if (data != NULL) {
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
+    } else {
+        cp = WS_Copy(ctx->ws, strdup(""), 1);
     }
 
     return cp;
