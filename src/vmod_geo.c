@@ -62,7 +62,7 @@ vmod_lookup(VRT_CTX, struct vmod_priv *global, const char *ipstr, const char **l
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
@@ -93,7 +93,7 @@ vmod_lookup_weathercode(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         }
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
@@ -117,7 +117,7 @@ vmod_lookup_timezone(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
@@ -141,7 +141,7 @@ vmod_lookup_location(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
@@ -220,7 +220,7 @@ vmod_get_weather_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
@@ -238,7 +238,7 @@ vmod_get_cookie(VRT_CTX, const char *cookiestr, const char *cookiename)
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
@@ -281,7 +281,7 @@ vmod_latlon(VRT_CTX, struct vmod_priv *global, const char *ipstr)
         cp = WS_Copy(ctx->ws, data, strlen(data)+1);
         free(data);
     } else {
-        cp = WS_Copy(ctx->ws, strdup(""), 1);
+        cp = WS_Copy(ctx->ws, "", 1);
     }
 
     return cp;
