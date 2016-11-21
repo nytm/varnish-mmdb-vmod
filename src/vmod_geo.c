@@ -238,11 +238,11 @@ vmod_init_mmdb(struct sess *sp, struct vmod_priv *global, const char *mmdb_path)
     int mmdb_baddb = MMDB_open(mmdb_path, MMDB_MODE_MMAP, &mmdb_handle);
     if (mmdb_baddb != MMDB_SUCCESS) {
 #ifdef DEBUG
-        fprintf(stderr, "[ERROR] open_mmdb: Can't open %s - %s\n",
+        fprintf(stderr, "[ERROR] MMDB_open: Can't open %s - %s\n",
                 mmdb_path, MMDB_strerror(mmdb_baddb));
         if (MMDB_IO_ERROR == mmdb_baddb) {
             fprintf(stderr,
-                    "[ERROR] open_mmdb: IO error: %s\n",
+                    "[ERROR] MMDB_open: IO error: %s\n",
                     strerror(mmdb_baddb));
         }
 #endif
