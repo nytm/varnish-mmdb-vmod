@@ -42,7 +42,7 @@ open_mmdb(MMDB_s *mmdb_handle)
 	int mmdb_baddb = MMDB_open(MMDB_CITY_PATH, MMDB_MODE_MMAP, mmdb_handle);
 	if (mmdb_baddb != MMDB_SUCCESS) {
 #ifdef DEBUG
-		fprintf(stderr, "[ERROR] open_mmdb: Can't open %s - %s\n",
+		fprintf(stderr, "[ERROR] MMDB_open: Can't open %s - %s\n",
 				MMDB_CITY_PATH, MMDB_strerror(mmdb_baddb));
 		if (MMDB_IO_ERROR == mmdb_baddb) {
 			fprintf(stderr,
@@ -403,7 +403,7 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 	if (db_status != MMDB_SUCCESS) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[ERROR] geo_lookup_timezone_lookup_location: libmaxminddb failure. \
+				"[ERROR] geo_lookup_timezone: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 				MMDB_CITY_PATH,
 				MMDB_strerror(db_status));
