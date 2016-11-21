@@ -46,7 +46,7 @@ open_mmdb(MMDB_s *mmdb_handle)
 				MMDB_CITY_PATH, MMDB_strerror(mmdb_baddb));
 		if (MMDB_IO_ERROR == mmdb_baddb) {
 			fprintf(stderr,
-					"[ERROR] open_mmdb: IO error: %s\n",
+					"[ERROR] MMDB_open: IO error: %s\n",
 					strerror(mmdb_baddb));
 		}
 #endif
@@ -74,7 +74,7 @@ geo_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char **lookup_pat
 	if (0 != gai_error) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[INFO] Error from getaddrinfo for %s - %s\n\n",
+				"[INFO] Error from MMDB_lookup_string for %s - %s\n\n",
 				ipstr, gai_strerror(gai_error));
 #endif
 		return NULL;
@@ -163,7 +163,7 @@ get_value(MMDB_lookup_result_s *result, const char **path)
 #ifdef DEBUG
 		fprintf(
 			stderr,
-			"[WARN] get_value got an error looking up the entry data. Make sure you use the correct path - %s\n",
+			"[WARN] MMDB_aget_value got an error looking up the entry data. Make sure you use the correct path - %s\n",
 			MMDB_strerror(status));
 #endif
 		return NULL;
@@ -206,7 +206,7 @@ get_value(MMDB_lookup_result_s *result, const char **path)
 #ifdef DEBUG
 			fprintf(
 				stderr,
-				"[WARN] get_value: No handler for entry data type (%d) was found. \n",
+				"[WARN] MMDB_aget_value: No handler for entry data type (%d) was found. \n",
 				entry_data.type);
 #endif
 			break;
@@ -245,7 +245,7 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr)
 	if (ip_lookup_failed) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[WARN] vmod_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
+				"[WARN] geo_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
 				ipstr, gai_strerror(ip_lookup_failed));
 #endif
 		return strdup(ERROR_LOCATION);
@@ -254,7 +254,7 @@ geo_lookup_location(MMDB_s *const mmdb_handle, const char *ipstr)
 	if (db_status != MMDB_SUCCESS) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[ERROR] vmod_lookup_location: libmaxminddb failure. \
+				"[ERROR] geo_lookup_location: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 				MMDB_CITY_PATH,
 				MMDB_strerror(db_status));
@@ -324,7 +324,7 @@ Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 			ipstr);
 #endif
 		size_t chars = strlen(ipstr);
-		const char *format = "{\"reponse_code\":404,\"ip\":\"%s\"}";
+		const char *format = "{\"response_code\":404,\"ip\":\"%s\"}";
 		chars += strlen(format);
 		chars -= 2;
 		data  =  calloc(sizeof(char), chars+1);
@@ -389,7 +389,7 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 	if (ip_lookup_failed) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[WARN] vmod_lookup_location: Error from getaddrinfo for IP: %s Error Message: %s\n",
+				"[WARN] geo_lookup_timezone: Error from getaddrinfo for IP: %s Error Message: %s\n",
 				ipstr, gai_strerror(ip_lookup_failed));
 #endif
 		// we don't want null, if we're not using default
@@ -403,7 +403,7 @@ geo_lookup_timezone(MMDB_s *const mmdb_handle, const char *ipstr, int use_defaul
 	if (db_status != MMDB_SUCCESS) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[ERROR] vmod_lookup_location: libmaxminddb failure. \
+				"[ERROR] geo_lookup_timezone_lookup_location: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 				MMDB_CITY_PATH,
 				MMDB_strerror(db_status));
@@ -607,7 +607,7 @@ dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *out
 	if (ip_lookup_failed) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[WARN] vmod_lookup_weathercode: Error from getaddrinfo for IP: %s Error Message: %s\n",
+				"[WARN] dump_failed_lookup: Error from getaddrinfo for IP: %s Error Message: %s\n",
 				ipstr, gai_strerror(ip_lookup_failed));
 #endif
 		return;
@@ -616,7 +616,7 @@ dump_failed_lookup(MMDB_s *const mmdb_handle, const char *ipstr, const char *out
 	if (db_status != MMDB_SUCCESS) {
 #ifdef DEBUG
 		fprintf(stderr,
-				"[ERROR] vmod_lookup_weathercode: libmaxminddb failure. \
+				"[ERROR] dump_failed_lookup: libmaxminddb failure. \
 Maybe there is something wrong with the file: %s libmaxmind error: %s\n",
 				MMDB_CITY_PATH,
 				MMDB_strerror(db_status));
