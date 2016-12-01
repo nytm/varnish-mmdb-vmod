@@ -23,7 +23,7 @@ rpmbuild --verbose \
 
 echo "rpmbuild complete"
 
-for e in $(find ${buildroot}/rpmbuild -name ${name}*.rpm); do
+for e in $(find ~/rpmbuild -name ${name}*.rpm); do
 	/usr/bin/sign-rpm $e
 	/usr/bin/publish-rpm $e
 	if [[ ! "${e}" =~ (debuginfo|src.rpm) ]]; then
