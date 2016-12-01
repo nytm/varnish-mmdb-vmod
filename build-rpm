@@ -2,7 +2,7 @@
 set -ETeu -o pipefail
 
 build_number=$(git rev-list HEAD | wc -l)
-rpmbuild -bb ${WORKSPACE}/libvmod-maxmind-geoip.spec --define "_version_number 4.1.0" --define "_build_number ${build_number}" --define "_source ${WORKSPACE}"
+rpmbuild -ba ${WORKSPACE}/libvmod-maxmind-geoip.spec --define "_version_number 4.1.0" --define "_build_number ${build_number}" --define "_source ${WORKSPACE}"
 for e in $(find ~/rpmbuild/RPMS -name libvmod-maxmind-geoip\*.rpm); do
 	/usr/bin/sign-rpm $e
 	/usr/bin/publish-rpm $e
