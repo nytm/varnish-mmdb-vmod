@@ -16,7 +16,7 @@ buildroot="${2}"
 build_number=$(git rev-list HEAD | wc -l)
 
 rpmbuild --verbose \
-		 -ba ${WORKSPACE}/libvmod-maxmind-geoip.spec \
+		 -ba ${buildroot}/libvmod-maxmind-geoip.spec \
 		 --define "_version_number 4.1.0" \
 		 --define "_build_number ${build_number}" \
 		 --define "_source ${buildroot}"
@@ -24,16 +24,18 @@ rpmbuild --verbose \
 echo "rpmbuild complete"
 
 for e in $(find ~/rpmbuild -name ${name}*.rpm); do
+	echo "sign and publish $e"
 	/usr/bin/sign-rpm $e
 	/usr/bin/publish-rpm $e
 	if [[ ! "${e}" =~ (debuginfo|src.rpm) ]]; then
-		rpmfile=$(echo ${e}|sed 's|.*/||')
+		rpm=$(echo ${e}|sed 's|.*/||')
 	fi
 	rm -f $e
 done
 
-echo "BUILD=${buildnumber}" > ${WORKSPACE}/version.properties
-echo "VERSION=${version}-${buildnumber}" >> ${WORKSPACE}/version.properties
-echo "RPM=$rpmfile" >> ${WORKSPACE}/version.properties
+echo "done with rpms. Build properties file"
+echo "BUILD=${buildnumber}" > ${buildroot}/version.properties
+echo "VERSION=${version}-${buildnumber}" >> ${buildroot}/version.properties
+echo "RPM=$rpmfile" >> ${buildroot}/version.properties
 echo $rpm
 exit 0
