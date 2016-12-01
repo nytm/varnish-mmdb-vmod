@@ -61,10 +61,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 
 %clean
-#clean
 rm -rf $RPM_BUILD_ROOT
 rm -rf %{buildroot}
-rm -rf %{checkoutName}
 
 %files
 %defattr(-,root,root,-)
