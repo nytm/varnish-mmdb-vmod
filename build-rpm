@@ -29,6 +29,7 @@ for e in $(find ${buildroot}/rpmbuild -name ${name}*.rpm); do
 	if [[ ! "${e}" =~ (debuginfo|src.rpm) ]]; then
 		rpmfile=$(echo ${e}|sed 's|.*/||')
 	fi
+	rm -f $e
 done
 
 echo "BUILD=${buildnumber}" > ${WORKSPACE}/version.properties
