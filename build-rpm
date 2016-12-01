@@ -12,18 +12,18 @@ fi
 
 name="${1}"
 buildroot="${2}"
-
+version=4.1.0
 build_number=$(git rev-list HEAD | wc -l)
 
 rpmbuild --verbose \
-		 -ba ${buildroot}/libvmod-maxmind-geoip.spec \
-		 --define "_version_number 4.1.0" \
+		 -ba ${buildroot}/${name}.spec \
+		 --define "_version_number ${version}" \
 		 --define "_build_number ${build_number}" \
 		 --define "_source ${buildroot}"
 
-echo "rpmbuild complete"
+echo "rpmbuild complete. Locate ${name} rpms in /var/lib/jenkins/rpmbuild"
 
-for e in $(find ~/rpmbuild -name ${name}*.rpm); do
+for e in $(find /var/lib/jenkins/rpmbuild -name ${name}*.rpm); do
 	echo "sign and publish $e"
 	/usr/bin/sign-rpm $e
 	/usr/bin/publish-rpm $e
@@ -34,8 +34,8 @@ for e in $(find ~/rpmbuild -name ${name}*.rpm); do
 done
 
 echo "done with rpms. Build properties file"
-echo "BUILD=${buildnumber}" > ${buildroot}/version.properties
-echo "VERSION=${version}-${buildnumber}" >> ${buildroot}/version.properties
-echo "RPM=$rpmfile" >> ${buildroot}/version.properties
+echo "BUILD=${build_number}" > ${buildroot}/version.properties
+echo "VERSION=${version}-${build_number}" >> ${buildroot}/version.properties
+echo "RPM=$rpm" >> ${buildroot}/version.properties
 echo $rpm
 exit 0
