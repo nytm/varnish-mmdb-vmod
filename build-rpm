@@ -9,8 +9,8 @@ printHelp() {
 if [[ "${1}" == "" || "${2}" == "" ]]; then
 	printHelp
 fi
-
-name="${1}"
+# at some point, rename the git repo
+name="libvmod-maxmind-geoip"
 buildroot="${2}"
 version=4.1.0
 build_number=$(git rev-list HEAD | wc -l)
