@@ -20,3 +20,12 @@ rpmbuild --verbose \
 		 --define "_version_number 4.1.0" \
 		 --define "_build_number ${build_number}" \
 		 --define "_source ${buildroot}"
+
+rpm=$(find ${buildroot}/rpmbuild -name ${name}*.rpm)
+rpmfile=$(echo ${rpm}|sed 's|.*/||')
+
+echo "BUILD=${buildnumber}" > ${WORKSPACE}/version.properties
+echo "VERSION=${version}-${buildnumber}" >> ${WORKSPACE}/version.properties
+echo "RPM=$rpmfile" >> ${WORKSPACE}/version.properties
+echo $rpm
+exit 0
