@@ -1,10 +1,22 @@
 #!/bin/bash
 set -ETeu -o pipefail
 
+printHelp() {
+	echo "usage: ${0} <name> <workspace>"
+	exit 1
+}
+
+if [[ "${1}" == "" || "${2}" == "" ]]; then
+	printHelp
+fi
+
+name="${1}"
+buildroot="${2}"
+
 build_number=$(git rev-list HEAD | wc -l)
-rpmbuild -ba ${WORKSPACE}/libvmod-maxmind-geoip.spec --define "_version_number 4.1.0" --define "_build_number ${build_number}" --define "_source ${WORKSPACE}"
-for e in $(find ~/rpmbuild/RPMS -name libvmod-maxmind-geoip\*.rpm); do
-	/usr/bin/sign-rpm $e
-	/usr/bin/publish-rpm $e
-	rm -f $e
-done
+
+rpmbuild --verbose \
+		 -ba ${WORKSPACE}/libvmod-maxmind-geoip.spec \
+		 --define "_version_number 4.1.0" \
+		 --define "_build_number ${build_number}" \
+		 --define "_source ${buildroot}"
