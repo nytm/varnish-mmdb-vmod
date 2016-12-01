@@ -21,8 +21,15 @@ rpmbuild --verbose \
 		 --define "_build_number ${build_number}" \
 		 --define "_source ${buildroot}"
 
-rpm=$(find ${buildroot}/rpmbuild -name ${name}*.rpm)
-rpmfile=$(echo ${rpm}|sed 's|.*/||')
+/usr/bin/sign-rpm $e
+/usr/bin/publish-rpm $e
+
+for e in $(find ${buildroot}/rpmbuild -name ${name}*.rpm); do
+	if [[ ! "${e}" =~ (debuginfo|src.rpm) ]]; then
+		rpmfile=$(echo ${e}|sed 's|.*/||')
+	fi
+done
+
 
 echo "BUILD=${buildnumber}" > ${WORKSPACE}/version.properties
 echo "VERSION=${version}-${buildnumber}" >> ${WORKSPACE}/version.properties
