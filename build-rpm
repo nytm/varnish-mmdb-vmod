@@ -9,22 +9,25 @@ printHelp() {
 if [[ "${1}" == "" || "${2}" == "" ]]; then
 	printHelp
 fi
-# at some point, rename the git repo
+
+# name should match the rpm being built
+# spec is the specfile
+# buildroot is where the code is.
+# build_number is going to be the number of git commits
+
 name="libvmod-maxmind-geoip"
+spec="${name}.spec"
 buildroot="${2}"
 version=4.1.0
 build_number=$(git rev-list HEAD | wc -l)
 
 rpmbuild --verbose \
-		 -ba ${buildroot}/${name}.spec \
+		 -ba ${buildroot}/${spec} \
 		 --define "_version_number ${version}" \
 		 --define "_build_number ${build_number}" \
 		 --define "_source ${buildroot}"
 
-echo "rpmbuild complete. Locate ${name} rpms in /var/lib/jenkins/rpmbuild"
-
 for e in $(find /var/lib/jenkins/rpmbuild -name ${name}*.rpm); do
-	echo "sign and publish $e"
 	/usr/bin/sign-rpm $e
 	/usr/bin/publish-rpm $e
 	if [[ ! "${e}" =~ (debuginfo|src.rpm) ]]; then
@@ -33,7 +36,6 @@ for e in $(find /var/lib/jenkins/rpmbuild -name ${name}*.rpm); do
 	rm -f $e
 done
 
-echo "done with rpms. Build properties file"
 echo "BUILD=${build_number}" > ${buildroot}/version.properties
 echo "VERSION=${version}-${build_number}" >> ${buildroot}/version.properties
 echo "RPM=$rpm" >> ${buildroot}/version.properties
