@@ -30,3 +30,6 @@ Makefile.in
 /src/vcc_if.h
 /tests/testrunner
 /tests/test_ips
+GPATH
+GRTAGS
+GTAGS
