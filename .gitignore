@@ -33,3 +33,4 @@ Makefile.in
 GPATH
 GRTAGS
 GTAGS
+*.rst
