@@ -6,9 +6,9 @@ printHelp() {
 	exit 1
 }
 
-if [[ "${1}" == "" || "${2}" == "" ]]; then
-	printHelp
-fi
+#if [[ "${1}" == "" || "${2}" == "" ]]; then
+#	printHelp
+#fi
 # at some point, rename the git repo
 name="libvmod-maxmind-geoip"
 buildroot="${2}"
