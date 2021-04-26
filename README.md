@@ -1,3 +1,7 @@
+# DEPRECATED
+
+DU/PUBP now uses Fastly.
+
 Varnish MaxMind GeoIP vmod
 --------------------------
 
